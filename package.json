@@ -6,7 +6,7 @@
     "name": "Bambang Yudhotomo",
     "url": "https://github.com/bambangy"
   },
-  "homepage": "https://github.com/bambangy/LookCalendar",
+  "homepage": "https://bambangy.github.io/LookCalendar/docs/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bambangy/LookCalendar.git"
@@ -62,7 +62,7 @@
     "@lookui/core": ">=0.4.1"
   },
   "devDependencies": {
-    "@lookui/core": "file:../LookUI",
+    "@lookui/core": ">=0.4.1",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-terser": "^1.0.0",
     "autoprefixer": "^10.6.1",

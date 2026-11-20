@@ -1,5 +1,12 @@
 # LookCalendar
 
+[![CI](https://github.com/bambangy/LookCalendar/actions/workflows/ci.yml/badge.svg)](https://github.com/bambangy/LookCalendar/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/bambangy/LookCalendar/actions/workflows/codeql.yml/badge.svg)](https://github.com/bambangy/LookCalendar/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/bambangy/LookCalendar/badge)](https://scorecard.dev/viewer/?uri=github.com/bambangy/LookCalendar)
+[![npm](https://img.shields.io/npm/v/@lookui/calendar)](https://www.npmjs.com/package/@lookui/calendar)
+[![dependencies](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](package.json)
+[![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 A modular, imperative calendar & scheduler built on [`@lookui/core`](https://github.com/bambangy/LookUI) — month, week, day and agenda views; drag-to-create, drag-to-move, resize; keyboard accessible; simple recurrence with timezone support; `.ics` import/export; and a built-in, fully customizable create/edit event form. Think TUI Calendar's feature set, but composed from independently-usable pieces instead of one monolithic widget.
 
 ```js
@@ -12,7 +19,7 @@ lkCalendar('#calendar', {
 });
 ```
 
-## 📖 Documentation → **[docs/index.html](./docs/index.html)**
+## 📖 Documentation → **[bambangy.github.io/LookCalendar](https://bambangy.github.io/LookCalendar/docs/)**
 
 An interactive HTML site, not a wall of markdown — every demo is the real, running library:
 

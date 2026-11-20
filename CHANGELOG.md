@@ -1,6 +1,13 @@
 # Changelog
 
-## 0.1.0
+All notable changes to `@lookui/calendar` are documented here.
+The project follows [Semantic Versioning](https://semver.org/); while the version is `0.x`, minor releases may contain breaking changes — they are listed under **Breaking changes**.
+
+Documentation: https://bambangy.github.io/LookCalendar/docs/
+
+## [Unreleased]
+
+## [0.1.0] — 2026-11-21
 
 Initial release.
 
