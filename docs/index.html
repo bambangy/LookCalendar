@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LookCalendar — docs</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='17' rx='2' fill='%235c6bc0'/%3E%3Crect x='3' y='4' width='18' height='5' rx='2' fill='%233949ab'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../node_modules/@lookui/core/dist/look.css" />
+<link rel="stylesheet" href="../dist/look-calendar.css" />
+<link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <div class="demo-header__top">
+      <a href="index.html" class="demo-header__brand">📅 LookCalendar</a>
+      <nav class="demo-nav">
+        <a href="index.html" aria-current="page">Overview</a>
+        <a href="views.html">Views</a>
+        <a href="recurrence.html">Events &amp; recurrence</a>
+        <a href="customization.html">Customization</a>
+        <a href="theming.html">Theming</a>
+        <a href="api.html">API reference</a>
+        <a href="https://github.com/bambangy/LookCalendar">GitHub ↗</a>
+      </nav>
+    </div>
+    <p class="demo-header__tagline">
+      A modular, imperative calendar &amp; scheduler built on <code>@lookui/core</code> — month/week/day/agenda
+      views, drag-to-create, drag-to-move, resize, recurrence, and a customizable built-in event form.
+      Every demo on this site is the real, running library — not a mockup.
+    </p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Try it — live demo</p>
+    <p class="demo-sub">
+      This is a real <code>lkCalendar()</code> instance. Drag across days to create an event, drag an
+      event to move it, click one to edit or delete it, and switch views with the toolbar.
+    </p>
+
+    <div class="lk-card">
+      <div class="lk-card__body">
+        <div class="demo-row">
+          <label>Locale
+            <select id="demo-locale" class="lk-input lk-select" style="width:auto;min-width:5rem;">
+              <option value="en">en</option>
+              <option value="id">id</option>
+              <option value="ja">ja</option>
+            </select>
+          </label>
+          <label>Week starts on
+            <select id="demo-week-start" class="lk-input lk-select" style="width:auto;min-width:7rem;">
+              <option value="0">Sunday</option>
+              <option value="1">Monday</option>
+            </select>
+          </label>
+          <button id="demo-add-random" type="button" class="lk-btn lk-btn--secondary lk-btn--sm">Add random event</button>
+        </div>
+        <div id="demo-calendar"></div>
+        <div id="demo-log" class="demo-output">Ready.</div>
+      </div>
+    </div>
+
+    <div class="lk-card" style="margin-top: var(--lk-space-4);">
+      <div class="lk-card__header">Editable event colors</div>
+      <div class="lk-card__body">
+        <p class="demo-sub" style="margin-bottom: var(--lk-space-3);">
+          Every event gets a random, stable color by default (<code>autoColor: true</code>, the
+          default) unless its calendar or the event itself sets one. Pick a color for any event
+          below — it updates the calendar immediately.
+        </p>
+        <div id="event-color-list" class="demo-event-colors"></div>
+      </div>
+    </div>
+
+    <div class="demo-usage">
+      <p class="demo-usage__title">JavaScript</p>
+      <pre>import { lkCalendar } from '@lookui/calendar';
+
+const calendar = lkCalendar('#calendar', {
+  view: 'month',
+  calendars: [
+    { id: 'work', name: 'Work', color: '#5c6bc0' },
+    { id: 'personal', name: 'Personal', color: '#00bcd4' },
+  ],
+  events: [
+    {
+      calendarId: 'work',
+      title: 'Daily standup',
+      start: '2026-03-02T09:00:00',
+      end: '2026-03-02T09:15:00',
+      recurrence: { freq: 'weekly', byWeekday: [1, 2, 3, 4, 5] },
+    },
+  ],
+  onCreate(event) { console.log('created', event); },
+  onChange(event) { console.log('updated', event); },
+  onRemove(event) { console.log('removed', event); },
+});</pre>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Install — getting started</p>
+    <p class="demo-sub">
+      <code>@lookui/core</code> is a <strong>peer dependency</strong> — install both, and load its
+      <code>look.css</code> before <code>look-calendar.css</code>. LookCalendar styles itself entirely
+      with LookUI's own design tokens and components (buttons, modal, inputs, icons) — nothing to theme twice.
+    </p>
+    <div class="demo-usage">
+      <p class="demo-usage__title">Install</p>
+      <pre>npm install @lookui/core @lookui/calendar</pre>
+    </div>
+    <div class="demo-usage">
+      <p class="demo-usage__title">HTML</p>
+      <pre>&lt;link rel="stylesheet" href="node_modules/@lookui/core/dist/look.css"&gt;
+&lt;link rel="stylesheet" href="node_modules/@lookui/calendar/dist/look-calendar.css"&gt;
+
+&lt;div id="calendar"&gt;&lt;/div&gt;
+&lt;script type="module"&gt;
+  import { lkCalendar } from '@lookui/calendar';
+  lkCalendar('#calendar', { /* ... */ });
+&lt;/script&gt;</pre>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Design — modular by design</p>
+    <p class="demo-sub">
+      <code>lkCalendar()</code> is a thin composition of pieces that are each independently usable —
+      import the whole orchestrator, or just the data layer, just one view, or just the built-in form.
+      See <a href="views.html">Views</a> for using a renderer on its own, and each piece's own complete
+      API reference (full options/properties/methods, not just a usage snippet) in the list below.
+    </p>
+    <div class="demo-usage">
+      <pre>import {
+  lkCalendar,           // the whole thing: toolbar + view + built-in CRUD dialog
+  createCalendarStore,  // just the event/calendar data model
+  createMonthView,      // just the month grid renderer
+  createTimeGridView,   // just the week/day renderer
+  createAgendaView,     // just the list renderer
+  createEventForm,      // just the built-in create/edit form
+  exportICS, importICS, // interop with Google Calendar / Outlook / Apple Calendar
+} from '@lookui/calendar';</pre>
+    </div>
+    <ul class="demo-sub" style="margin-top: var(--lk-space-3);">
+      <li><a href="api.html">lkCalendar</a> — the orchestrator's full API reference</li>
+      <li><a href="api-calendar-store.html">createCalendarStore</a> — the data layer's full API reference</li>
+      <li><a href="api-month-view.html">createMonthView</a> / <a href="api-timegrid-view.html">createTimeGridView</a> / <a href="api-agenda-view.html">createAgendaView</a> — each view renderer's full API reference</li>
+      <li><a href="api-event-form.html">createEventForm</a> — the built-in form's full API reference</li>
+      <li><a href="api-ics.html">exportICS / importICS</a> — the .ics interop functions' full API reference</li>
+    </ul>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">What's built-in</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: var(--lk-space-4);">
+      <a class="demo-nav-card" href="views.html">
+        <strong>Four views</strong>
+        <span>Month, week, day, agenda — switch with the toolbar or <code>calendar.changeView()</code>.</span>
+      </a>
+      <a class="demo-nav-card" href="views.html">
+        <strong>Drag interactions</strong>
+        <span>Drag-to-create, drag-to-move, and resize (week/day) an event's edge.</span>
+      </a>
+      <a class="demo-nav-card" href="recurrence.html">
+        <strong>Recurrence</strong>
+        <span>Daily/weekly/monthly rules with <code>interval</code>, <code>until</code>, <code>count</code>, <code>byWeekday</code>, <code>exdates</code>.</span>
+      </a>
+      <a class="demo-nav-card" href="customization.html">
+        <strong>Built-in CRUD form</strong>
+        <span>Backed by <code>lkForm</code>/<code>lkDate</code>/<code>lkDropdown</code>/<code>lkCheckbox</code> — swap its markup with your own template.</span>
+      </a>
+      <a class="demo-nav-card" href="api.html#api-section-guards">
+        <strong><code>before*</code> guard hooks</strong>
+        <span>Same convention as every LookUI component — veto or replace any create/change/remove/navigate.</span>
+      </a>
+      <a class="demo-nav-card" href="theming.html">
+        <strong>Themed via LookUI tokens</strong>
+        <span>No parallel palette — every color/radius/spacing resolves through <code>--lk-*</code>. Dark mode just works.</span>
+      </a>
+      <a class="demo-nav-card" href="theming.html#per-event-color">
+        <strong>Auto event color</strong>
+        <span>An uncolored event gets a stable, random-looking color (<code>autoColor</code>, on by default) instead of every event looking the same — see the picker above.</span>
+      </a>
+      <a class="demo-nav-card" href="theming.html#marking-days">
+        <strong>Marked days</strong>
+        <span>Color weekends, public holidays or blackout dates with <code>markedDays</code> — no event required.</span>
+      </a>
+      <a class="demo-nav-card" href="theming.html">
+        <strong>Full color overrides</strong>
+        <span>Header, date, time, event, today and selection each have their own <code>--lkc-*</code> token — retarget any one without side effects.</span>
+      </a>
+      <a class="demo-nav-card" href="api-month-view.html">
+        <strong>Keyboard accessible</strong>
+        <span>Event chips are focusable (Enter/Space opens them); month view's day grid is a roving-tabindex grid (arrow keys, Enter/Space to create). Every toolbar control and the agenda list were already native buttons.</span>
+      </a>
+      <a class="demo-nav-card" href="recurrence.html#timezones">
+        <strong>Timezone support</strong>
+        <span><code>opts.timezone</code> pins "today", every view's day/week/month boundaries, displayed times and recurring events' cadence to an IANA zone — independent of the viewer's own machine, and DST-safe.</span>
+      </a>
+      <a class="demo-nav-card" href="recurrence.html#ics-import-export">
+        <strong>.ics import/export</strong>
+        <span><code>exportICS()</code> / <code>importICS()</code> — interop with Google Calendar, Outlook and Apple Calendar via the same RFC 5545 format they all read and write.</span>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="demo-footer">
+  LookCalendar — MIT License — built on <a href="https://github.com/bambangy/LookUI">LookUI</a>
+</footer>
+
+<script src="../node_modules/@lookui/core/dist/look.js"></script>
+<script src="../dist/look-calendar.js"></script>
+<script src="docs.js"></script>
+<script>
+(function () {
+  const logEl = document.getElementById('demo-log');
+  const log = (...a) => DocsDemo.log(logEl, ...a);
+  const colorListEl = document.getElementById('event-color-list');
+
+  const CALENDARS = [
+    { id: 'work', name: 'Work', color: '#5c6bc0' },
+    { id: 'personal', name: 'Personal', color: '#00bcd4' },
+  ];
+
+  function demoEvents() {
+    const now = new Date();
+    const base = new Date(now.getFullYear(), now.getMonth(), 1, 9, 0);
+    return [
+      { calendarId: 'work', title: 'Daily standup', start: base, end: new Date(base.getTime() + 15 * 60000),
+        recurrence: { freq: 'weekly', byWeekday: [1, 2, 3, 4, 5] } },
+      { calendarId: 'personal', title: 'Dentist', start: new Date(now.getFullYear(), now.getMonth(), 12, 14, 0),
+        end: new Date(now.getFullYear(), now.getMonth(), 12, 15, 0) },
+      { calendarId: 'work', title: 'Quarterly offsite', allDay: true,
+        start: new Date(now.getFullYear(), now.getMonth(), 18),
+        end: new Date(now.getFullYear(), now.getMonth(), 20) },
+      // No calendarId and no color — picks up a random, stable color (autoColor) instead of
+      // inheriting a calendar's color, to show the default off.
+      { title: 'Portfolio review', start: new Date(now.getFullYear(), now.getMonth(), 22, 15, 0),
+        end: new Date(now.getFullYear(), now.getMonth(), 22, 16, 0) },
+    ];
+  }
+
+  function renderEventColors() {
+    colorListEl.textContent = '';
+    current.store.all()
+      .sort((a, b) => a.start - b.start)
+      .forEach((event) => {
+        const row = document.createElement('label');
+        row.className = 'demo-event-color-row';
+
+        const swatch = document.createElement('input');
+        swatch.type = 'color';
+        swatch.value = event.color || '#5c6bc0';
+        swatch.addEventListener('input', () => {
+          current.updateEvent(event.id, { color: swatch.value });
+        });
+
+        const title = document.createElement('span');
+        title.className = 'demo-event-color-row__title';
+        title.textContent = event.title || '(untitled)';
+
+        const meta = document.createElement('span');
+        meta.className = 'demo-event-color-row__meta';
+        meta.textContent = event.recurrence ? 'recurring' : (event.allDay ? 'all day' : '');
+
+        row.appendChild(swatch);
+        row.appendChild(title);
+        row.appendChild(meta);
+        colorListEl.appendChild(row);
+      });
+  }
+
+  function makeCalendar(opts) {
+    const cal = LookCalendar.lkCalendar('#demo-calendar', {
+      view: 'month',
+      calendars: CALENDARS,
+      onCreate(event) { log('created:', event.title); },
+      onChange(event) { log('updated:', event.title); },
+      onRemove(event) { log('removed:', event.title); },
+      ...opts,
+    });
+    cal.store.on(() => renderEventColors());
+    return cal;
+  }
+
+  let current = makeCalendar({ date: new Date(), events: demoEvents() });
+  renderEventColors();
+
+  document.getElementById('demo-locale').addEventListener('change', rebuild);
+  document.getElementById('demo-week-start').addEventListener('change', rebuild);
+
+  function rebuild() {
+    const locale = document.getElementById('demo-locale').value;
+    const weekStartsOn = Number(document.getElementById('demo-week-start').value);
+    const existingEvents = current.store.all();
+    current.destroy();
+    current = makeCalendar({ locale, weekStartsOn, events: existingEvents });
+    renderEventColors();
+  }
+
+  document.getElementById('demo-add-random').addEventListener('click', () => {
+    const titles = ['Design review', 'Client call', '1:1', 'Sprint planning', 'Lunch & learn'];
+    const day = Math.ceil(Math.random() * 25);
+    const hour = 8 + Math.floor(Math.random() * 8);
+    const start = new Date(current.date.getFullYear(), current.date.getMonth(), day, hour, 0);
+    current.addEvent({
+      calendarId: Math.random() > 0.5 ? 'work' : 'personal',
+      title: titles[Math.floor(Math.random() * titles.length)],
+      start, end: new Date(start.getTime() + 3600000),
+    });
+    log('added random event');
+  });
+})();
+</script>
+
+</body>
+</html>

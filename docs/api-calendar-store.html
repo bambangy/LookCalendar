@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LookCalendar — createCalendarStore API reference</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='17' rx='2' fill='%235c6bc0'/%3E%3Crect x='3' y='4' width='18' height='5' rx='2' fill='%233949ab'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../node_modules/@lookui/core/dist/look.css" />
+<link rel="stylesheet" href="../dist/look-calendar.css" />
+<link rel="stylesheet" href="shared.css" />
+<link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <div class="demo-header__top">
+      <a href="index.html" class="demo-header__brand">📅 LookCalendar</a>
+      <nav class="demo-nav">
+        <a href="index.html">Overview</a>
+        <a href="views.html">Views</a>
+        <a href="recurrence.html">Events &amp; recurrence</a>
+        <a href="customization.html">Customization</a>
+        <a href="theming.html">Theming</a>
+        <a href="api.html" aria-current="page">API reference</a>
+        <a href="https://github.com/bambangy/LookCalendar">GitHub ↗</a>
+      </nav>
+    </div>
+    <p class="demo-header__tagline"><code>createCalendarStore(opts)</code> — the event/calendar data model, usable with no view and no DOM at all.</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <div class="demo-pill-group" style="margin-bottom: var(--lk-space-5);">
+    <a class="demo-pill" href="api.html">lkCalendar</a>
+    <a class="demo-pill demo-pill--active" href="api-calendar-store.html">createCalendarStore</a>
+    <a class="demo-pill" href="api-month-view.html">createMonthView</a>
+    <a class="demo-pill" href="api-timegrid-view.html">createTimeGridView</a>
+    <a class="demo-pill" href="api-agenda-view.html">createAgendaView</a>
+    <a class="demo-pill" href="api-event-form.html">createEventForm</a>
+    <a class="demo-pill" href="api-ics.html">exportICS / importICS</a>
+  </div>
+  <div id="api"></div>
+</main>
+
+<footer class="demo-footer">
+  LookCalendar — MIT License — built on <a href="https://github.com/bambangy/LookUI">LookUI</a>
+</footer>
+
+<script src="../node_modules/@lookui/core/dist/look.js"></script>
+<script src="../dist/look-calendar.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'createCalendarStore',
+  kind: 'Factory',
+  signature: ["const store = createCalendarStore(opts);"],
+  description: [
+    'The data layer underneath every view, and underneath `lkCalendar()` itself: events + calendars, change notifications, recurrence expansion, and effective-color resolution. No DOM, no rendering — pair it with your own renderer, one of the built-in view renderers (see [Views](views.html)), or let `lkCalendar()` create one for you.',
+    'Share one store across multiple mounted calendars/views by passing it as `opts.store` to `lkCalendar()` or a view\'s own render loop — `destroy()` on a calendar that did **not** create the store leaves the store running.',
+  ],
+  params: [
+    { name: 'opts', type: 'Object', optional: true, description: 'Configuration — see **Configuration** below.' },
+  ],
+  returns: { type: 'Object', description: 'The store instance — see **Properties** and **Methods** below.' },
+
+  options: [
+    { name: 'events', type: 'Array', default: '[]', description: 'Initial events — each `{ id?, calendarId?, title?, start, end, allDay?, color?, icon?, recurrence?, editable?, ...yourOwnFields }`. `start` is the only required field; `id` is generated if omitted.' },
+    { name: 'calendars', type: 'Array<{id,name,color}>', default: "one 'default' calendar", description: 'Named groups an event can belong to via `event.calendarId` — each supplies a fallback color for events that don\'t set their own.' },
+    {
+      name: 'timezone', type: 'string',
+      description: 'An IANA zone (e.g. \'America/New_York\') recurring events\' cadence is computed in by default (an event\'s own `event.timezone` overrides this). Omit to keep recurrence expansion exactly as it was — cadence following the machine\'s own local time — see [Events & recurrence](recurrence.html#timezones).',
+    },
+    {
+      name: 'autoColor', type: 'boolean', default: 'true',
+      description: 'Give an event with no explicit `color` and no calendar `color` a stable, deterministic color from a small built-in palette (hashed from its id) instead of letting it fall through to the single CSS default (`--lkc-event-color`) — see [Theming](theming.html#per-event-color).',
+      examples: [{ run: true, code: `
+        const store = LookCalendar.createCalendarStore({
+          autoColor: true,
+          events: [
+            { title: 'A', start: new Date(2026, 0, 1), end: new Date(2026, 0, 1, 1) },
+            { title: 'B', start: new Date(2026, 0, 2), end: new Date(2026, 0, 2, 1) },
+          ],
+        });
+        store.all().forEach((e) => log(e.title, '->', e.color));` }],
+    },
+  ],
+
+  properties: [
+    { name: 'timezone', type: 'string | null', readonly: true, description: 'The `opts.timezone` this store was created with, or `null`.' },
+  ],
+
+  methods: [
+    {
+      name: 'add', signature: 'add(input) → event', description: 'Normalizes and stores an event, notifies listeners (`\'add\'`), and returns it with its effective color resolved.',
+      examples: [{ run: true, code: `
+        const store = LookCalendar.createCalendarStore();
+        const event = store.add({ title: 'Kickoff', start: new Date(2026, 0, 15, 9), end: new Date(2026, 0, 15, 10) });
+        log('added:', event.title, '-> color', event.color);` }],
+    },
+    { name: 'update', signature: 'update(id, patch) → event | null', description: 'Merges `patch` onto the existing event (re-normalizing) and notifies (`\'update\'`); `null` if `id` doesn\'t exist. Acts on the whole series for a recurring event — see `updateOccurrence` for single-instance edits.' },
+    { name: 'remove', signature: 'remove(id) → boolean', description: 'Notifies (`\'remove\'`). Removes the whole series for a recurring event — see `removeOccurrence` for a single instance.' },
+    {
+      name: 'updateOccurrence', signature: "updateOccurrence(instance, patch, scope = 'this') → event | null",
+      description: 'Applies an edit to one instance of a (possibly recurring) event, the way every mainstream calendar app asks "this event / this and following / all events". `instance` is an event *instance* as returned by `between()` (carries `masterId` for a recurring occurrence — a plain, non-recurring event works too and always behaves as `\'all\'`). `scope`: `\'this\'` carves that date out of the series into a standalone exception event (the series gets an `exdate`); `\'following\'` ends the old series the day before and starts a new one from there, carrying the patch forward; `\'all\'` behaves like plain `update()` on the whole series. Returns the event that was actually changed — the master for `\'all\'`/`\'following\'`, or the new standalone exception event for `\'this\'`. See [Events & recurrence](recurrence.html#single-occurrence-editing).',
+    },
+    {
+      name: 'removeOccurrence', signature: "removeOccurrence(instance, scope = 'this') → boolean",
+      description: 'Same `\'this\'`/`\'following\'`/`\'all\'` scopes as `updateOccurrence`, for deleting instead of editing.',
+    },
+    { name: 'get', signature: 'get(id) → event | null', description: 'A single event by id, with its effective color resolved. `null` if it doesn\'t exist.' },
+    { name: 'all', signature: 'all() → event[]', description: 'Every stored event (masters, not expanded occurrences — use `between()` for expanded recurrence instances), with effective colors resolved.' },
+    {
+      name: 'between', signature: 'between(rangeStart, rangeEnd) → event[]',
+      description: 'Every concrete instance overlapping `[rangeStart, rangeEnd)`, recurring events expanded into their individual occurrences, sorted by start time. This is what every view renderer calls on each `render()`.',
+      examples: [{ run: true, code: `
+        const store = LookCalendar.createCalendarStore({
+          events: [{ title: 'Standup', start: new Date(2026, 0, 5, 9), end: new Date(2026, 0, 5, 9, 15),
+            recurrence: { freq: 'daily', byWeekday: [1, 2, 3, 4, 5] } }],
+        });
+        const instances = store.between(new Date(2026, 0, 1), new Date(2026, 0, 10));
+        log(instances.length, 'occurrences in range');` }],
+    },
+    { name: 'setCalendars', signature: 'setCalendars(list) → void', description: 'Replaces the whole calendar list and notifies (`\'calendars\'`). Recoloring a calendar this way is reflected by every event in it immediately, since effective color is resolved at read time, never baked into storage.' },
+    { name: 'calendars', signature: 'calendars() → Array<{id,name,color}>', description: 'The current calendar list.' },
+    { name: 'getCalendar', signature: 'getCalendar(id) → {id,name,color} | null', description: '' },
+    {
+      name: 'on', signature: "on(fn) → unsubscribe", description: "Subscribe to every change: `fn(type, payload)` where `type` is `'add' | 'update' | 'remove' | 'calendars'`. `'update'`'s payload is `{ event, previous }` (both effective-color-resolved); the others' payload is the event (or calendar list). Returns an unsubscribe function.",
+      examples: [{ run: true, code: `
+        const store = LookCalendar.createCalendarStore();
+        const off = store.on((type, payload) => log(type, payload.title || payload.length));
+        store.add({ title: 'Kickoff', start: new Date(), end: new Date(Date.now() + 3600000) });
+        off(); // stop listening` }],
+    },
+    { name: 'destroy', signature: 'destroy() → void', description: 'Clears listeners, events, and calendars. Only call this on a store you created yourself — `lkCalendar({ store })` never destroys a store it didn\'t create.' },
+  ],
+
+  notes: [
+    'Every view renderer (`createMonthView`, `createTimeGridView`, `createAgendaView`) is store-agnostic: it just takes `(date, instances, calendars)` on `render()`. Nothing stops you from writing your own data layer instead of `createCalendarStore()`, as long as you feed the views arrays shaped like the examples above — see [Views](views.html) for driving a view renderer by hand.',
+    'An event\'s *effective* color (what `add`/`update`/`get`/`all`/`between` all return) is: its own `color` if set, else its calendar\'s `color`, else — when `autoColor` is on — a stable color hashed from its id, else `null` (the CSS default). This is computed every time, never stored, so changing a calendar\'s color with `setCalendars()` updates every event in it on the next read.',
+  ],
+});
+</script>
+
+</body>
+</html>

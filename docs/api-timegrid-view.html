@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LookCalendar — createTimeGridView API reference</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='17' rx='2' fill='%235c6bc0'/%3E%3Crect x='3' y='4' width='18' height='5' rx='2' fill='%233949ab'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../node_modules/@lookui/core/dist/look.css" />
+<link rel="stylesheet" href="../dist/look-calendar.css" />
+<link rel="stylesheet" href="shared.css" />
+<link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <div class="demo-header__top">
+      <a href="index.html" class="demo-header__brand">📅 LookCalendar</a>
+      <nav class="demo-nav">
+        <a href="index.html">Overview</a>
+        <a href="views.html">Views</a>
+        <a href="recurrence.html">Events &amp; recurrence</a>
+        <a href="customization.html">Customization</a>
+        <a href="theming.html">Theming</a>
+        <a href="api.html" aria-current="page">API reference</a>
+        <a href="https://github.com/bambangy/LookCalendar">GitHub ↗</a>
+      </nav>
+    </div>
+    <p class="demo-header__tagline"><code>createTimeGridView(container, opts)</code> — the week/day renderer, standalone and store-agnostic.</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <div class="demo-pill-group" style="margin-bottom: var(--lk-space-5);">
+    <a class="demo-pill" href="api.html">lkCalendar</a>
+    <a class="demo-pill" href="api-calendar-store.html">createCalendarStore</a>
+    <a class="demo-pill" href="api-month-view.html">createMonthView</a>
+    <a class="demo-pill demo-pill--active" href="api-timegrid-view.html">createTimeGridView</a>
+    <a class="demo-pill" href="api-agenda-view.html">createAgendaView</a>
+    <a class="demo-pill" href="api-event-form.html">createEventForm</a>
+    <a class="demo-pill" href="api-ics.html">exportICS / importICS</a>
+  </div>
+  <div id="api"></div>
+</main>
+
+<footer class="demo-footer">
+  LookCalendar — MIT License — built on <a href="https://github.com/bambangy/LookUI">LookUI</a>
+</footer>
+
+<script src="../node_modules/@lookui/core/dist/look.js"></script>
+<script src="../dist/look-calendar.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'createTimeGridView',
+  kind: 'Factory',
+  signature: ["const view = createTimeGridView(container, opts);"],
+  description: [
+    'Backs both the week view (`days: 7`, the default) and the day view (`days: 1`) — same renderer, one option. Entirely standalone: it never touches a store — you call `view.render(date, instances, calendars)` yourself whenever the visible range or the data changes. Pair it with `createCalendarStore()` or any data source of your own shaped the same way — see [Views](views.html) for a complete example with a hand-rolled toolbar.',
+  ],
+  params: [
+    { name: 'container', type: 'Element', description: 'Mount point — the view renders its grid directly into it.' },
+    { name: 'opts', type: 'Object', optional: true, description: 'Configuration — see **Configuration** below.' },
+  ],
+  returns: { type: 'Object', description: 'The view instance — see **Methods** below.' },
+
+  options: [
+    { name: 'days', type: '7 | 1', default: '7', description: '7 for the week view, 1 for the day view.' },
+    { name: 'weekStartsOn', type: '0–6', default: '0', description: '0 = Sunday. Only matters when `days: 7`.' },
+    { name: 'startHour', type: 'number', default: '0', description: 'First visible hour.' },
+    { name: 'endHour', type: 'number', default: '24', description: 'Last visible hour.' },
+    { name: 'slotMinutes', type: 'number', default: '30', description: 'Snap/selection granularity for drag-to-create/move/resize.' },
+    { name: 'slotHeight', type: 'number (px)', default: '24', description: 'Pixels per `slotMinutes` — sets the vertical scale of the whole grid.' },
+    { name: 'locale', type: 'string', description: 'BCP 47 locale, passed to every `Intl` call.' },
+    {
+      name: 'timezone', type: 'string',
+      description: '"Today", the visible days\' boundaries, and displayed times (including the now-line and business-hours shading) are computed in this IANA zone. Omit to use the viewer\'s own machine zone — see [Events & recurrence](recurrence.html#timezones).',
+    },
+    {
+      name: 'markedDays', type: 'Array | Function',
+      description: 'Color specific days independent of any event (weekends, public holidays, blackout dates) — see [Theming](theming.html#marking-days) for every rule shape.',
+    },
+    {
+      name: 'showNowLine', type: 'boolean', default: 'true',
+      description: 'A live line across today\'s column at the current time, repositioned every 30s. The interval is cleared in `destroy()`.',
+    },
+    {
+      name: 'businessHours', type: 'Object',
+      description: 'Shade the hours/days outside it — `{ start: 9, end: 17, days: [1,2,3,4,5] }`. Any key you omit keeps that dimension unrestricted.',
+    },
+    {
+      name: 'eventIcon', type: 'Function',
+      description: 'Signature: `(event) => iconSpec`. Fallback icon template for events with no `event.icon` of their own — see [Views](views.html#event-icons).',
+    },
+    { name: 'text', type: 'Object', description: "i18n overrides, namespace `'calendar'` (this view only defines the `'allDay'` key)." },
+    { name: 'onSelect', type: 'Function', description: 'Signature: `({ start, end, allDay: false }) => void` — fires after a drag-to-select on empty grid space.' },
+    { name: 'onEventClick', type: 'Function', description: 'Signature: `(event, domEvent) => void`.' },
+    { name: 'onEventMove', type: 'Function', description: 'Signature: `(event, { start, end }) => void` — fires after a chip is dragged to a new time/day.' },
+    { name: 'onEventResize', type: 'Function', description: 'Signature: `(event, { start, end }) => void` — fires after the bottom resize handle is dragged. A resize that would shrink an event below 15 minutes is rejected.' },
+  ],
+
+  properties: [],
+
+  methods: [
+    {
+      name: 'render', signature: 'render(date, instances, calendars = []) → void',
+      description: 'Redraws the whole grid for the week/day containing `date`. `instances` is the already-expanded event array for at least the visible range; `calendars` is `[{id,name,color}]`, used only for the handful of places color isn\'t already resolved on the instance.',
+      examples: [{ run: true, code: `
+        const store = LookCalendar.createCalendarStore({
+          events: [{ title: 'Kickoff', start: new Date(2026, 0, 15, 9), end: new Date(2026, 0, 15, 10) }],
+        });
+        const view = LookCalendar.createTimeGridView(container, { days: 1, startHour: 8, endHour: 18 });
+        const date = new Date(2026, 0, 15);
+        const dm = LookCalendar.calendarDateMath;
+        view.render(date, store.between(dm.startOfDay(date), dm.endOfDay(date)), store.calendars());
+        log('rendered a single-day grid.');` }],
+    },
+    {
+      name: 'setMarkedDays', signature: 'setMarkedDays(rules) → void',
+      description: 'Updates `markedDays` and re-renders — see [Theming](theming.html#marking-days).',
+    },
+    { name: 'destroy', signature: 'destroy() → void', description: 'Tears down drag/resize handles and the now-line interval, and empties the container.' },
+  ],
+
+  notes: [
+    'Use `calendarDateMath` (re-exported from `@lookui/calendar`) to compute the visible range yourself: `startOfWeek`/`endOfWeek` for the week view, `startOfDay`/`endOfDay` for the day view — see the example above.',
+    'Drag-to-create, drag-to-move and resize all call `preventDefault()` once a gesture is confirmed underway, and the grid surfaces carry `user-select: none; touch-action: none` as a CSS backstop — so a drag never leaves behind a native text-selection highlight.',
+    'Keyboard: event chips (both timed and all-day) are `role="button"`, focusable, and open on Enter/Space. Creating or moving/resizing a timed slot by keyboard isn\'t covered yet — the continuous, pixel-based time axis doesn\'t have discrete keyboard-navigable slots the way month view\'s day grid does; `lkCalendar`\'s toolbar "New event" button is the keyboard path to create an event in this view today.',
+  ],
+});
+</script>
+
+</body>
+</html>

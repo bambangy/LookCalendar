@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LookCalendar — Views</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='17' rx='2' fill='%235c6bc0'/%3E%3Crect x='3' y='4' width='18' height='5' rx='2' fill='%233949ab'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../node_modules/@lookui/core/dist/look.css" />
+<link rel="stylesheet" href="../dist/look-calendar.css" />
+<link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <div class="demo-header__top">
+      <a href="index.html" class="demo-header__brand">📅 LookCalendar</a>
+      <nav class="demo-nav">
+        <a href="index.html">Overview</a>
+        <a href="views.html" aria-current="page">Views</a>
+        <a href="recurrence.html">Events &amp; recurrence</a>
+        <a href="customization.html">Customization</a>
+        <a href="theming.html">Theming</a>
+        <a href="api.html">API reference</a>
+        <a href="https://github.com/bambangy/LookCalendar">GitHub ↗</a>
+      </nav>
+    </div>
+    <p class="demo-header__tagline">
+      Each view is a standalone renderer — mount it without <code>lkCalendar()</code> at all,
+      and drive it from your own store and your own toolbar.
+    </p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+    <section class="demo-section">
+      <p class="demo-section__title">One store, four views — no orchestrator</p>
+      <p class="demo-sub">
+        This demo never touches <code>lkCalendar()</code>. It builds a <code>createCalendarStore()</code>
+        directly and mounts whichever view renderer is selected below, with a hand-rolled prev/today/next.
+      </p>
+
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <div class="demo-row">
+            <div class="demo-pill-group" id="view-switch">
+              <button class="demo-pill demo-pill--active" data-view="month">Month</button>
+              <button class="demo-pill" data-view="week">Week</button>
+              <button class="demo-pill" data-view="day">Day</button>
+              <button class="demo-pill" data-view="agenda">Agenda</button>
+            </div>
+            <button id="v-prev" class="lk-btn lk-btn--secondary lk-btn--sm">‹ Prev</button>
+            <button id="v-today" class="lk-btn lk-btn--secondary lk-btn--sm">Today</button>
+            <button id="v-next" class="lk-btn lk-btn--secondary lk-btn--sm">Next ›</button>
+            <span id="v-title" style="font-weight:var(--lk-weight-semibold);"></span>
+          </div>
+          <div id="view-mount"></div>
+          <div id="view-log" class="demo-output">Ready.</div>
+        </div>
+      </div>
+
+      <div class="demo-usage">
+        <p class="demo-usage__title">JavaScript</p>
+        <pre>import { createMonthView, createTimeGridView, createAgendaView, createCalendarStore } from '@lookui/calendar';
+
+const store = createCalendarStore({ events: [ /* ... */ ] });
+
+const view = createMonthView(document.querySelector('#grid'), {
+  weekStartsOn: 1,
+  onSelect: ({ start, end }) => store.add({ title: 'New event', start, end, allDay: true }),
+  onEventClick: (event) => console.log('clicked', event.title),
+  onEventMove: (event, { start, end }) => store.update(event.masterId || event.id, { start, end }),
+  onShowMore: (day, events) => console.log(events.length, 'more events on', day),
+});
+
+function render(date) {
+  // compute [rangeStart, rangeEnd] for the visible grid yourself, e.g. with the
+  // monthGridDays()/startOfWeek()/startOfDay() helpers exported as calendarDateMath
+  const instances = store.between(rangeStart, rangeEnd);
+  view.render(date, instances, store.calendars());
+}</pre>
+      </div>
+    </section>
+
+    <section class="demo-section" id="multi-day-style">
+      <p class="demo-section__title">Month view: continuous bar vs. per-day blocks</p>
+      <p class="demo-sub">
+        A multi-day event (an all-day span, or a recurring series that lands on consecutive days)
+        can render as one seamless bar across its days, or as a separate chip per day. Toggle it below.
+        In <code>'continuous'</code> mode it's a single chip, planted on the bar's starting day and
+        stretched to visually span every day it crosses — no repeated title per day, no seam at the
+        day boundaries, and the full multi-day width for the time/title to use.
+      </p>
+
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <div class="demo-row">
+            <div class="demo-pill-group" id="mds-switch">
+              <button class="demo-pill demo-pill--active" data-style="continuous">Continuous (default)</button>
+              <button class="demo-pill" data-style="block">Block — per day</button>
+            </div>
+          </div>
+          <div id="mds-calendar"></div>
+        </div>
+      </div>
+
+      <div class="demo-usage">
+        <p class="demo-usage__title">JavaScript</p>
+        <pre>lkCalendar('#calendar', {
+  multiDayStyle: 'continuous', // or 'block'
+});</pre>
+      </div>
+    </section>
+
+    <section class="demo-section" id="event-icons">
+      <p class="demo-section__title">Event chips: start–end time, icons, and compact collapsing</p>
+      <p class="demo-sub">
+        A timed event chip shows two lines — the time range (with an optional icon) on the first
+        line, the title on the second. When the chip is too small (packed next to other events, or a
+        short duration in week/day view) it collapses to a single compact line; hovering or focusing it
+        pops it back to two lines, overlaying its neighbors instead of reflowing the whole grid. Icons
+        come from either a per-event <code>icon</code> field or a calendar-level <code>eventIcon(event)</code>
+        template, and can be a <code>@lookui/core</code> icon name, an emoji, an image URL, raw HTML, or
+        any DOM node. The built-in create/edit form (<code>createEventForm()</code>) also ships with
+        Icon and Color fields by default, so end users can pick one without any custom template — see
+        <a href="customization.html#event-icons">Customization</a>.
+      </p>
+
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <div id="icon-calendar"></div>
+        </div>
+      </div>
+
+      <div class="demo-usage">
+        <p class="demo-usage__title">JavaScript</p>
+        <pre>lkCalendar('#calendar', {
+  // Fallback icon for events that don't set their own `icon` — event.icon always wins.
+  eventIcon: (event) => (event.calendarId === 'urgent' ? 'alert-triangle' : null),
+  events: [
+    { title: 'Design review', icon: 'users', start, end },        // @lookui/core icon name
+    { title: 'Launch', icon: { emoji: '🚀' }, start, end },        // emoji
+    { title: 'Client call', icon: { url: '/avatar.png', alt: 'Client' }, start, end }, // image
+  ],
+});</pre>
+      </div>
+    </section>
+
+</main>
+
+<footer class="demo-footer">
+  LookCalendar — MIT License — built on <a href="https://github.com/bambangy/LookUI">LookUI</a>
+</footer>
+
+<script src="../node_modules/@lookui/core/dist/look.js"></script>
+<script src="../dist/look-calendar.js"></script>
+<script src="docs.js"></script>
+<script>
+(function () {
+  const { createMonthView, createTimeGridView, createAgendaView, createCalendarStore, calendarDateMath: dm } = LookCalendar;
+  const logEl = document.getElementById('view-log');
+  const log = (...a) => DocsDemo.log(logEl, ...a);
+  const mount = document.getElementById('view-mount');
+  const titleEl = document.getElementById('v-title');
+
+  const now = new Date();
+  const store = createCalendarStore({
+    calendars: [{ id: 'default', name: 'Calendar', color: '#5c6bc0' }],
+    events: [
+      { title: 'Design review', start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10), end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 11) },
+      { title: 'Team lunch', start: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 12), end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 13) },
+      { title: 'Offsite', allDay: true, start: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3), end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 5) },
+    ],
+  });
+
+  let view = 'month';
+  let date = new Date();
+  let active = null;
+
+  const commonOpts = () => ({
+    locale: 'en',
+    onSelect: (sel) => { store.add({ title: 'New event', ...sel }); log('created from drag-select'); },
+    onEventClick: (event) => log('clicked:', event.title),
+    onEventMove: (event, patch) => { store.update(event.masterId || event.id, patch); log('moved:', event.title); },
+    onEventResize: (event, patch) => { store.update(event.masterId || event.id, patch); log('resized:', event.title); },
+    onShowMore: (day, events) => log(events.length, 'more events on', day.toDateString()),
+  });
+
+  function rangeFor() {
+    if (view === 'month') { const days = dm.monthGridDays(date, 0); return { start: days[0], end: dm.endOfDay(days[41]) }; }
+    if (view === 'week') return { start: dm.startOfWeek(date, 0), end: dm.endOfWeek(date, 0) };
+    if (view === 'day') return { start: dm.startOfDay(date), end: dm.endOfDay(date) };
+    return active.rangeFor(date);
+  }
+
+  function render() {
+    const { start, end } = rangeFor();
+    active.render(date, store.between(start, end), store.calendars());
+    titleEl.textContent = new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric', day: view === 'day' ? 'numeric' : undefined }).format(date);
+  }
+
+  function mountView() {
+    active?.destroy();
+    mount.textContent = '';
+    if (view === 'month') active = createMonthView(mount, commonOpts());
+    else if (view === 'week') active = createTimeGridView(mount, { ...commonOpts(), days: 7 });
+    else if (view === 'day') active = createTimeGridView(mount, { ...commonOpts(), days: 1 });
+    else active = createAgendaView(mount, { ...commonOpts(), rangeDays: 30 });
+    render();
+  }
+
+  store.on(() => render());
+
+  document.getElementById('view-switch').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-view]');
+    if (!btn) return;
+    document.querySelectorAll('#view-switch .demo-pill').forEach((b) => b.classList.toggle('demo-pill--active', b === btn));
+    view = btn.dataset.view;
+    mountView();
+  });
+  document.getElementById('v-prev').addEventListener('click', () => {
+    date = view === 'month' ? dm.addMonths(date, -1) : view === 'week' ? dm.addDays(date, -7) : dm.addDays(date, -1);
+    render();
+  });
+  document.getElementById('v-next').addEventListener('click', () => {
+    date = view === 'month' ? dm.addMonths(date, 1) : view === 'week' ? dm.addDays(date, 7) : dm.addDays(date, 1);
+    render();
+  });
+  document.getElementById('v-today').addEventListener('click', () => { date = new Date(); render(); });
+
+  mountView();
+})();
+
+(function () {
+  const now = new Date();
+  function makeDemo(multiDayStyle) {
+    return LookCalendar.lkCalendar('#mds-calendar', {
+      view: 'month',
+      multiDayStyle,
+      events: [
+        { title: 'Conference', allDay: true, color: '#00bcd4',
+          start: new Date(now.getFullYear(), now.getMonth(), 10),
+          end: new Date(now.getFullYear(), now.getMonth(), 13) },
+        { title: 'Standup', start: new Date(now.getFullYear(), now.getMonth(), 15, 9), end: new Date(now.getFullYear(), now.getMonth(), 15, 9, 15) },
+      ],
+    });
+  }
+  let demo = makeDemo('continuous');
+  document.getElementById('mds-switch').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-style]');
+    if (!btn) return;
+    document.querySelectorAll('#mds-switch .demo-pill').forEach((b) => b.classList.toggle('demo-pill--active', b === btn));
+    demo.destroy();
+    demo = makeDemo(btn.dataset.style);
+  });
+})();
+
+(function () {
+  const now = new Date();
+  const at = (h, m = 0) => new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
+  LookCalendar.lkCalendar('#icon-calendar', {
+    view: 'week',
+    eventIcon: (event) => (event.title === 'Standup' ? 'users' : null),
+    events: [
+      { title: 'Standup', color: '#5c6bc0', start: at(9), end: at(9, 15) },
+      { title: 'Design review', icon: 'edit', color: '#00bcd4', start: at(9, 30), end: at(10, 30) },
+      { title: 'Launch prep', icon: { emoji: '🚀' }, color: '#ff7043', start: at(9, 45), end: at(10, 15) },
+      { title: 'Client call', icon: { emoji: '📞' }, color: '#8e24aa', start: at(14), end: at(14, 30) },
+    ],
+  });
+})();
+</script>
+
+</body>
+</html>

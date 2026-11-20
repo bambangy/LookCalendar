@@ -1,0 +1,303 @@
+/* ------------------------------------------------------------------ */
+/* Demo page chrome — not part of LookCalendar itself.                  */
+/* Lifted verbatim from @lookui/core's own docs/shared.css so this site */
+/* looks and feels like LookUI's documentation, not a separate style.   */
+/* ------------------------------------------------------------------ */
+
+.demo-header {
+  background: var(--lk-primary);
+  color: var(--lk-primary-contrast);
+  padding: var(--lk-space-7) 0;
+}
+
+.demo-header__tagline {
+  margin: var(--lk-space-3) 0 0;
+  opacity: 0.9;
+  max-width: 48rem;
+}
+
+/* Inline padding lives on the container so header text and <main> content
+   share the same left edge at every width. */
+.demo-container {
+  max-width: var(--lk-container-lg);
+  margin-inline: auto;
+  padding-inline: var(--lk-space-4);
+}
+
+.demo-section {
+  padding: var(--lk-space-9) 0;
+}
+
+/* <main> already has top padding — avoid a double gap under the header. */
+.demo-section:first-child {
+  padding-top: 0;
+}
+
+.demo-section + .demo-section {
+  border-top: var(--lk-border-width) solid var(--lk-border);
+}
+
+.demo-section__title {
+  font-size: var(--lk-text-sm);
+  font-weight: var(--lk-weight-semibold);
+  letter-spacing: var(--lk-tracking-wider);
+  text-transform: uppercase;
+  color: var(--lk-text-muted);
+  margin-bottom: var(--lk-space-5);
+}
+
+.demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lk-space-3);
+  margin-bottom: var(--lk-space-5);
+}
+
+.demo-row:last-child {
+  margin-bottom: 0;
+}
+
+.demo-sub {
+  font-size: var(--lk-text-sm);
+  color: var(--lk-text-muted);
+  margin-bottom: var(--lk-space-3);
+}
+
+.demo-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+  font-size: var(--lk-text-sm);
+  color: var(--lk-primary-contrast);
+  text-decoration: none;
+  opacity: 0.8;
+  margin-bottom: var(--lk-space-2);
+}
+.demo-back:hover { opacity: 1; }
+
+/* Cross-page nav in the header band — LookUI's own ~80-page docs only ever need a single
+   "&larr; All Components" .demo-back link, but this site is six pages, so it gets a small
+   persistent nav row too (same header band, same token-driven styling, not a parallel system). */
+.demo-header__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lk-space-4);
+  flex-wrap: wrap;
+}
+
+.demo-header__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  font-weight: var(--lk-weight-semibold);
+  font-size: var(--lk-text-lg);
+  text-decoration: none;
+  color: inherit;
+}
+
+.demo-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lk-space-1);
+}
+
+.demo-nav a {
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.8;
+  font-size: var(--lk-text-sm);
+  padding: var(--lk-space-1) var(--lk-space-3);
+  border-radius: var(--lk-radius-full);
+}
+
+.demo-nav a:hover,
+.demo-nav a[aria-current="page"] {
+  opacity: 1;
+  background: rgb(255 255 255 / 0.16);
+}
+
+/* Nav cards on index page */
+.demo-nav-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lk-space-1);
+  padding: var(--lk-space-4);
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius-lg);
+  text-decoration: none;
+  color: var(--lk-text);
+  transition: border-color var(--lk-duration-fast), box-shadow var(--lk-duration-fast);
+}
+.demo-nav-card:hover {
+  border-color: var(--lk-primary);
+  box-shadow: var(--lk-shadow-sm);
+}
+.demo-nav-card strong {
+  font-size: var(--lk-text-base);
+}
+.demo-nav-card span {
+  font-size: var(--lk-text-sm);
+  color: var(--lk-text-muted);
+}
+
+/* Usage code blocks */
+.demo-usage {
+  margin-top: var(--lk-space-6);
+  padding: var(--lk-space-5);
+  background: var(--lk-bg-subtle);
+  border-radius: var(--lk-radius-lg);
+  border: var(--lk-border-width) solid var(--lk-border);
+}
+
+.demo-usage__title {
+  font-size: var(--lk-text-sm);
+  font-weight: var(--lk-weight-semibold);
+  color: var(--lk-text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--lk-tracking-wider);
+  margin-bottom: var(--lk-space-3);
+}
+
+.demo-usage pre {
+  background: var(--lk-secondary-dark);
+  color: #e8e8e8;
+  padding: var(--lk-space-4);
+  border-radius: var(--lk-radius);
+  overflow-x: auto;
+  font-size: var(--lk-text-sm);
+  font-family: var(--lk-font-mono);
+  line-height: var(--lk-leading-relaxed);
+  margin: 0;
+}
+
+.demo-usage pre + pre {
+  margin-top: var(--lk-space-3);
+}
+
+.demo-usage p {
+  font-size: var(--lk-text-sm);
+  color: var(--lk-text-muted);
+  margin-bottom: var(--lk-space-3);
+}
+
+/* Interactive output display */
+.demo-output {
+  margin-top: var(--lk-space-4);
+  padding: var(--lk-space-3);
+  background: var(--lk-surface);
+  border-radius: var(--lk-radius);
+  font-family: var(--lk-font-mono);
+  font-size: var(--lk-text-sm);
+  color: var(--lk-text-muted);
+  min-height: 1.5em;
+}
+
+.demo-output:empty {
+  display: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* LookCalendar-only additions — these aren't part of LookUI's own docs */
+/* chrome, but follow the same token-driven, no-parallel-palette spirit. */
+/* ------------------------------------------------------------------ */
+
+.demo-pill-group {
+  display: inline-flex;
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius-full);
+  overflow: hidden;
+}
+
+.demo-pill {
+  border: 0;
+  background: var(--lk-bg);
+  padding: var(--lk-space-1) var(--lk-space-3);
+  font-size: var(--lk-text-xs);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: inline-block;
+}
+
+.demo-pill + .demo-pill { border-left: var(--lk-border-width) solid var(--lk-border); }
+.demo-pill--active { background: var(--lk-primary); color: var(--lk-primary-contrast); }
+
+.demo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--lk-text-sm);
+}
+
+.demo-table th,
+.demo-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: var(--lk-space-2) var(--lk-space-3);
+  border-bottom: var(--lk-border-width) solid var(--lk-border);
+}
+
+.demo-table thead th {
+  color: var(--lk-text-muted);
+  text-transform: uppercase;
+  font-size: var(--lk-text-xs);
+  letter-spacing: var(--lk-tracking-wider);
+}
+
+.demo-event-colors {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lk-space-1);
+}
+
+.demo-event-colors:empty::after {
+  content: 'No events yet — drag-create one on the calendar above.';
+  color: var(--lk-text-muted);
+  font-size: var(--lk-text-sm);
+}
+
+.demo-event-color-row {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-3);
+  padding: var(--lk-space-1) var(--lk-space-2);
+  border-radius: var(--lk-radius);
+  cursor: pointer;
+}
+
+.demo-event-color-row:hover {
+  background: var(--lk-bg-subtle);
+}
+
+.demo-event-color-row input[type="color"] {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius-sm);
+  background: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.demo-event-color-row__title {
+  font-size: var(--lk-text-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.demo-event-color-row__meta {
+  margin-left: auto;
+  font-size: var(--lk-text-xs);
+  color: var(--lk-text-muted);
+  flex-shrink: 0;
+}
+
+.demo-footer {
+  padding: var(--lk-space-6) 0;
+  text-align: center;
+  color: var(--lk-text-muted);
+  font-size: var(--lk-text-sm);
+}

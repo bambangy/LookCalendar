@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LookCalendar — createEventForm API reference</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='17' rx='2' fill='%235c6bc0'/%3E%3Crect x='3' y='4' width='18' height='5' rx='2' fill='%233949ab'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../node_modules/@lookui/core/dist/look.css" />
+<link rel="stylesheet" href="../dist/look-calendar.css" />
+<link rel="stylesheet" href="shared.css" />
+<link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <div class="demo-header__top">
+      <a href="index.html" class="demo-header__brand">📅 LookCalendar</a>
+      <nav class="demo-nav">
+        <a href="index.html">Overview</a>
+        <a href="views.html">Views</a>
+        <a href="recurrence.html">Events &amp; recurrence</a>
+        <a href="customization.html">Customization</a>
+        <a href="theming.html">Theming</a>
+        <a href="api.html" aria-current="page">API reference</a>
+        <a href="https://github.com/bambangy/LookCalendar">GitHub ↗</a>
+      </nav>
+    </div>
+    <p class="demo-header__tagline"><code>createEventForm(opts)</code> — the built-in create/edit form, usable with no calendar mounted at all.</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <div class="demo-pill-group" style="margin-bottom: var(--lk-space-5);">
+    <a class="demo-pill" href="api.html">lkCalendar</a>
+    <a class="demo-pill" href="api-calendar-store.html">createCalendarStore</a>
+    <a class="demo-pill" href="api-month-view.html">createMonthView</a>
+    <a class="demo-pill" href="api-timegrid-view.html">createTimeGridView</a>
+    <a class="demo-pill" href="api-agenda-view.html">createAgendaView</a>
+    <a class="demo-pill demo-pill--active" href="api-event-form.html">createEventForm</a>
+    <a class="demo-pill" href="api-ics.html">exportICS / importICS</a>
+  </div>
+  <div id="api"></div>
+</main>
+
+<footer class="demo-footer">
+  LookCalendar — MIT License — built on <a href="https://github.com/bambangy/LookUI">LookUI</a>
+</footer>
+
+<script src="../node_modules/@lookui/core/dist/look.js"></script>
+<script src="../dist/look-calendar.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'createEventForm',
+  kind: 'Factory',
+  signature: ["const form = createEventForm(opts);"],
+  description: [
+    'The markup and wiring behind `lkCalendar`\'s create/edit dialog — entirely built on `@lookui/core`: `lkForm` drives values/validation, `lkCheckbox`/`lkDropdown`/`lkColor` style the native controls, `lkDate` supplies the start/end pickers, `lkIcon` previews each option in the icon picker. Fully standalone: append `form.el` anywhere and read `form.getValues()` yourself — no calendar, no dialog, required.',
+    'Pass `opts.template` (a string or `(ctx) => string`) to replace the default markup entirely; wiring looks up fields by a fixed selector contract (see **Notes**) so a custom template only needs to include the fields it actually wants — see [Customization](customization.html) for worked examples (adding a field, separate create/edit templates).',
+  ],
+  params: [
+    { name: 'opts', type: 'Object', optional: true, description: 'Configuration — see **Configuration** below.' },
+  ],
+  returns: { type: 'Object', description: 'The form instance — see **Properties** and **Methods** below.' },
+
+  options: [
+    { name: 'event', type: 'Object', description: 'The existing event, when editing. Omit (or pass one with no `id`) to build a create form.' },
+    { name: 'calendars', type: 'Array<{id,name,color}>', default: '[]', description: 'Populates the Calendar dropdown.' },
+    { name: 'locale', type: 'string', description: 'BCP 47 locale, passed to the `lkDate` pickers.' },
+    { name: 'mode', type: "'create' | 'edit'", description: "Defaults to `'edit'` when `event.id` is set, else `'create'`. Passed to a function `template` as `ctx.mode`, so one template can render a leaner \"quick add\" form and a fuller \"edit\" form from the same function." },
+    { name: 'text', type: 'Object', description: "i18n overrides, namespace `'calendar'` (keys prefixed `form.*`, e.g. `'form.title'`)." },
+    { name: 'template', type: 'string | Function', description: "Replaces the default markup (see **Notes** for the field contract). A function receives `({ event, calendars, locale, mode, t })` and returns an HTML string." },
+  ],
+
+  properties: [
+    { name: 'el', type: 'Element', readonly: true, description: 'The `<form>` element — append it wherever you like.' },
+    { name: 'form', type: 'Object', readonly: true, description: 'The underlying `lkForm` instance — use `form.form.get(name)` to reach a specific wired field component (e.g. the `lkColor`/`lkDropdown` instance behind `color`/`icon`), or `form.form.getValues()` for the raw, unprocessed field values.' },
+  ],
+
+  methods: [
+    {
+      name: 'getValues', signature: 'getValues() → { title, allDay, start, end, calendarId, icon, color, description }',
+      description: 'The processed, ready-to-save values. `start`/`end` are rounded to the day when `allDay` is checked. `icon`/`color` are `null` when left blank (meaning "no override" — inherit the event\'s calendar color/autoColor, no icon) unless editing an event whose `icon` isn\'t a plain icon name (an emoji/image/HTML/node icon set programmatically), in which case it\'s preserved untouched unless the user actually changes the icon field.',
+      examples: [{ run: true, code: `
+        const form = LookCalendar.createEventForm({
+          calendars: [{ id: 'work', name: 'Work' }],
+          event: { title: 'Review', start: new Date(), end: new Date(Date.now() + 3600000) },
+        });
+        log(JSON.stringify(form.getValues(), null, 2));
+        form.destroy();` }],
+    },
+    { name: 'validate', signature: 'validate() → boolean', description: 'Marks the title field invalid (and returns `false`) if it\'s blank; `true` otherwise. `lkCalendar` calls this before saving.' },
+    { name: 'destroy', signature: 'destroy() → void', description: 'Tears down every wired `@lookui/core` component (`lkDate`, `lkDropdown`, `lkColor`, `lkCheckbox`) and the underlying `lkForm`.' },
+  ],
+
+  notes: [
+    'Field contract — any field your template omits is simply left unwired: `[name="title"]` (plain text input/textarea), `[name="allDay"]` (`lkCheckbox`), `[data-field="start"]`/`[data-field="end"]` (`lkDate`, time mode, popup trigger), `[name="calendarId"]` (`lkDropdown`, populated from `opts.calendars`), `[name="icon"]` (`lkDropdown` over a curated `@lookui/core` icon-name list — see [Views](views.html#event-icons)), `[name="color"]` (`lkColor` swatch + picker), `[name="description"]` (plain textarea, optional).',
+    'Extra fields your custom template adds (like a `location` input) aren\'t part of `getValues()`\'s fixed return shape — read them from `form.form.getValues()` (the raw `lkForm` values) or query `form.el` directly. See the full field-contract table and worked custom-template examples in [Customization](customization.html).',
+  ],
+});
+</script>
+
+</body>
+</html>

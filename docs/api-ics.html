@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LookCalendar — exportICS / importICS API reference</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='17' rx='2' fill='%235c6bc0'/%3E%3Crect x='3' y='4' width='18' height='5' rx='2' fill='%233949ab'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../node_modules/@lookui/core/dist/look.css" />
+<link rel="stylesheet" href="../dist/look-calendar.css" />
+<link rel="stylesheet" href="shared.css" />
+<link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <div class="demo-header__top">
+      <a href="index.html" class="demo-header__brand">📅 LookCalendar</a>
+      <nav class="demo-nav">
+        <a href="index.html">Overview</a>
+        <a href="views.html">Views</a>
+        <a href="recurrence.html">Events &amp; recurrence</a>
+        <a href="customization.html">Customization</a>
+        <a href="theming.html">Theming</a>
+        <a href="api.html" aria-current="page">API reference</a>
+        <a href="https://github.com/bambangy/LookCalendar">GitHub ↗</a>
+      </nav>
+    </div>
+    <p class="demo-header__tagline"><code>exportICS(events, opts)</code> / <code>importICS(ics)</code> — interop with Google Calendar, Outlook, Apple Calendar and anything else that reads/writes <code>.ics</code>.</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <div class="demo-pill-group" style="margin-bottom: var(--lk-space-5);">
+    <a class="demo-pill" href="api.html">lkCalendar</a>
+    <a class="demo-pill" href="api-calendar-store.html">createCalendarStore</a>
+    <a class="demo-pill" href="api-month-view.html">createMonthView</a>
+    <a class="demo-pill" href="api-timegrid-view.html">createTimeGridView</a>
+    <a class="demo-pill" href="api-agenda-view.html">createAgendaView</a>
+    <a class="demo-pill" href="api-event-form.html">createEventForm</a>
+    <a class="demo-pill demo-pill--active" href="api-ics.html">exportICS / importICS</a>
+  </div>
+  <div id="api"></div>
+</main>
+
+<footer class="demo-footer">
+  LookCalendar — MIT License — built on <a href="https://github.com/bambangy/LookUI">LookUI</a>
+</footer>
+
+<script src="../node_modules/@lookui/core/dist/look.js"></script>
+<script src="../dist/look-calendar.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'exportICS / importICS',
+  kind: 'Function',
+  signature: ["const ics = exportICS(events, opts);", "const events = importICS(ics);"],
+  description: [
+    '**Both functions work entirely with plain strings — neither one touches a file.** `exportICS()` *returns* a `.ics` file\'s text as a JS string; it never downloads anything itself. `importICS()` *takes* that same kind of string (read from wherever you got it — a file input, a fetch response, a paste) and returns plain event objects; it never reads a file itself either. See the **Examples** under each method below for exactly what that string looks like, going both directions, plus how to turn the export into a downloadable `.ics` file and how to read an uploaded one.',
+    'RFC 5545 (iCalendar) import/export — the same `.ics` format Google Calendar, Outlook and Apple Calendar all read and write, so an exported calendar opens correctly in any of them, and a file downloaded from any of them imports back into LookCalendar.',
+    'Deliberately small, matching [core/recurrence.js](recurrence.html#recurrence-rule-reference)\'s own scope: a recurring event\'s `RRULE` is mapped to/from this library\'s simple `{ freq, interval, byWeekday, until, count, exdates }` model (daily/weekly/monthly only) rather than the full RFC 5545 recurrence grammar. A VEVENT whose `RRULE` doesn\'t fit that shape (`FREQ=YEARLY`, `BYSETPOS`, `BYMONTH`, …) still imports — just as a single, non-recurring event at its `DTSTART`, instead of being dropped or throwing.',
+    'Both standalone functions work with no calendar or store at all; `lkCalendar` also wraps them as `calendar.exportICS(opts?)` / `calendar.importICS(icsText)` against its own store — see [lkCalendar\'s methods](api.html#api-methods-exportICS). Try the whole round trip live, with a real calendar, in [Events & recurrence](recurrence.html#ics-import-export).',
+  ],
+
+  options: [
+    { name: 'calendarName', type: 'string', description: 'Sets `X-WR-CALNAME` — the calendar\'s own display name, shown by most readers next to the imported events.' },
+    { name: 'productId', type: 'string', default: "'-//LookCalendar//EN'", description: 'The `PRODID` line.' },
+    {
+      name: 'timezone', type: 'string',
+      description: 'Fallback IANA zone for events with no `event.timezone` of their own: their `DTSTART`/`DTEND` are written as a local wall-clock time with a `TZID` parameter in this zone, instead of a UTC instant. Omit (and leave every event\'s own `timezone` unset too) to export plain UTC instants — unambiguous, and the safest default for interop.',
+    },
+  ],
+
+  properties: [],
+
+  methods: [
+    {
+      name: 'exportICS',
+      signature: 'exportICS(events, opts?) → string',
+      description: 'Serializes `events` into one RFC 5545 `VCALENDAR` — a single JS string containing every event as its own `VEVENT` block.',
+      params: [
+        { name: 'events', type: 'Array', description: 'Masters, not expanded instances — pass `store.all()`, not `store.between()`. A recurring event\'s `recurrence` is re-serialized as one `RRULE`, not one `VEVENT` per occurrence.' },
+        { name: 'opts', type: 'Object', optional: true, description: '`{ calendarName, productId, timezone }` — see **Configuration** above.' },
+      ],
+      returns: { type: 'string', description: 'The full `.ics` text — not a file, a `Blob`, or a download; a plain string you can log, send over the network, write to disk yourself (Node), or turn into a downloadable file in the browser (see the example below).' },
+      examples: [
+        {
+          title: 'Try it',
+          run: true,
+          code: `
+        const ics = LookCalendar.exportICS([
+          {
+            id: 'standup', title: 'Daily standup',
+            start: new Date(2026, 0, 15, 9, 0), end: new Date(2026, 0, 15, 9, 15),
+            recurrence: { freq: 'daily', byWeekday: [1, 2, 3, 4, 5], count: 10 },
+          },
+          { id: 'offsite', title: 'Team offsite', allDay: true, start: new Date(2026, 1, 10), end: new Date(2026, 1, 12) },
+        ], { calendarName: 'Work' });
+        log(ics);`,
+        },
+        {
+          title: 'Example output — exactly what that string looks like',
+          code: `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//LookCalendar//EN
+CALSCALE:GREGORIAN
+X-WR-CALNAME:Work
+BEGIN:VEVENT
+UID:standup@lookcalendar
+DTSTAMP:20260101T000000Z
+DTSTART:20260115T090000Z
+DTEND:20260115T091500Z
+SUMMARY:Daily standup
+RRULE:FREQ=DAILY;BYDAY=MO,TU,WE,TH,FR;COUNT=10
+END:VEVENT
+BEGIN:VEVENT
+UID:offsite@lookcalendar
+DTSTAMP:20260101T000000Z
+DTSTART;VALUE=DATE:20260210
+DTEND;VALUE=DATE:20260212
+SUMMARY:Team offsite
+END:VEVENT
+END:VCALENDAR
+`,
+        },
+        {
+          title: 'Turning it into a downloadable .ics file (browser)',
+          code: `const ics = calendar.exportICS({ calendarName: 'Work' }); // a string
+const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'work-calendar.ics'; // the filename the user's browser saves
+a.click();
+URL.revokeObjectURL(url);`,
+        },
+        {
+          title: 'Writing it to disk yourself (Node.js / a backend)',
+          code: `import { writeFileSync } from 'node:fs';
+const ics = exportICS(store.all(), { calendarName: 'Work' });
+writeFileSync('work-calendar.ics', ics, 'utf8');`,
+        },
+      ],
+    },
+    {
+      name: 'importICS',
+      signature: 'importICS(ics) → event[]',
+      description: 'Parses a full `.ics` file\'s text — however you got that text (see the examples below for a file input, a paste, or a `fetch` response) — into plain event objects.',
+      params: [
+        { name: 'ics', type: 'string', description: 'A full `.ics` file\'s text — one `VCALENDAR` containing any number of `VEVENT`s. Exactly the kind of string a real Google Calendar/Outlook/Apple Calendar export produces, or that `exportICS()` above produces.' },
+      ],
+      returns: { type: 'Array', description: 'Events shaped for `store.add()` / `createCalendarStore({ events })`: `{ id, title, start, end, allDay, description?, timezone?, recurrence? }`. Not yet added to any store — add them yourself (`calendar.importICS()` does this for you against its own store).' },
+      examples: [
+        {
+          title: 'Example input — a .ics string (e.g. from Google Calendar, or hand-written)',
+          code: `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+BEGIN:VEVENT
+UID:abc123@google.com
+DTSTAMP:20260101T000000Z
+DTSTART:20260115T140000Z
+DTEND:20260115T150000Z
+SUMMARY:Kickoff
+DESCRIPTION:Bring the slide deck
+ORGANIZER;CN=Jane Doe:mailto:jane@example.com
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR
+`,
+        },
+        {
+          title: 'Try it — parsing the string above',
+          run: true,
+          code: `
+        const ics = [
+          'BEGIN:VCALENDAR', 'VERSION:2.0',
+          'BEGIN:VEVENT',
+          'UID:abc123@google.com',
+          'DTSTART:20260115T140000Z',
+          'DTEND:20260115T150000Z',
+          'SUMMARY:Kickoff',
+          'DESCRIPTION:Bring the slide deck',
+          'END:VEVENT',
+          'END:VCALENDAR',
+        ].join('\\r\\n');
+        const events = LookCalendar.importICS(ics);
+        log(JSON.stringify(events, null, 2));`,
+        },
+        {
+          title: 'Reading a .ics file the user picked (<input type="file">)',
+          code: `fileInput.addEventListener('change', async () => {
+  const file = fileInput.files[0];
+  const text = await file.text(); // a string — this is what importICS() wants
+  const events = calendar.importICS(text); // adds them straight to the calendar's store
+  console.log('imported', events.length, 'events');
+});`,
+        },
+        {
+          title: 'Reading a .ics file dropped onto the page',
+          code: `dropZone.addEventListener('drop', async (e) => {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  const text = await file.text();
+  calendar.importICS(text);
+});`,
+        },
+      ],
+    },
+  ],
+
+  notes: [
+    'Text fields (`SUMMARY`/`DESCRIPTION`) are escaped/unescaped per RFC 5545 §3.3.11 (`,` `;` `\\` and newlines), and long lines are folded/unfolded per §3.1 — both transparent to you; pass/read plain strings.',
+    'Round-tripping through `exportICS` → `importICS` preserves title, start/end, `allDay`, `description`, a zoned event\'s `timezone`, and any recurrence rule that fits the small model — except an explicit `interval: 1` (RRULE\'s implicit default), which the exporter omits for a cleaner file and which re-imports as "no `interval` key" rather than an explicit `1`; both mean the same thing.',
+    'An unrecognized `VEVENT` property (`ORGANIZER`, `ATTENDEE`, `STATUS`, `SEQUENCE`, `TRANSP`, …) is silently ignored rather than causing a parse error — real-world exports from Google/Outlook/Apple carry many properties this library has no use for.',
+    'Want fuller RFC 5545 recurrence (yearly, `BYMONTH`, `BYSETPOS`, …)? Expand the `RRULE` yourself with a dedicated library and build plain (non-recurring) events from the result — `importICS`\'s per-VEVENT shape doesn\'t require going through its own `RRULE` mapping at all.',
+  ],
+});
+</script>
+
+</body>
+</html>

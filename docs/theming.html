@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LookCalendar — Theming</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='17' rx='2' fill='%235c6bc0'/%3E%3Crect x='3' y='4' width='18' height='5' rx='2' fill='%233949ab'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../node_modules/@lookui/core/dist/look.css" />
+<link rel="stylesheet" href="../dist/look-calendar.css" />
+<link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <div class="demo-header__top">
+      <a href="index.html" class="demo-header__brand">📅 LookCalendar</a>
+      <nav class="demo-nav">
+        <a href="index.html">Overview</a>
+        <a href="views.html">Views</a>
+        <a href="recurrence.html">Events &amp; recurrence</a>
+        <a href="customization.html">Customization</a>
+        <a href="theming.html" aria-current="page">Theming</a>
+        <a href="api.html">API reference</a>
+        <a href="https://github.com/bambangy/LookCalendar">GitHub ↗</a>
+      </nav>
+    </div>
+    <p class="demo-header__tagline">
+      LookCalendar has no palette of its own — every value in <code>look-calendar.css</code> resolves
+      through LookUI's own <code>--lk-*</code> tokens. Theme LookUI once; LookCalendar follows.
+    </p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+    <section class="demo-section">
+      <p class="demo-section__title">Try it — live token playground</p>
+      <p class="demo-sub">These controls edit real CSS custom properties on <code>:root</code> — nothing is faked.</p>
+
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <div class="demo-row">
+            <label>Header color
+              <input id="t-header" type="color" value="#757575" />
+            </label>
+            <label>Date color
+              <input id="t-date" type="color" value="#1a1a2e" />
+            </label>
+            <label>Time color
+              <input id="t-time" type="color" value="#757575" />
+            </label>
+            <label>Event color
+              <input id="t-event" type="color" value="#5c6bc0" />
+            </label>
+            <label>Today color
+              <input id="t-today" type="color" value="#5c6bc0" />
+            </label>
+            <label>Selection color
+              <input id="t-selection" type="color" value="#5c6bc0" />
+            </label>
+            <button id="t-reset" class="lk-btn lk-btn--secondary lk-btn--sm">Reset all</button>
+          </div>
+          <div id="theme-calendar"></div>
+          <div class="demo-output">
+            Drag across a few days to see the selection color; today's date number uses the today color.
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-usage">
+        <p class="demo-usage__title">CSS</p>
+        <pre>:root {
+  --lkc-header-color: #757575;    /* weekday row / day-header text */
+  --lkc-date-color: #1a1a2e;      /* date numbers (month view) */
+  --lkc-time-color: #757575;      /* hour labels (week/day view) */
+  --lkc-event-color: #5c6bc0;     /* default event color (an event/calendar color always wins) */
+  --lkc-today-accent: #5c6bc0;    /* today's filled date circle / highlighted header text */
+  --lkc-selection-border: #5c6bc0; /* drag-to-create preview border */
+  --lkc-selection-bg: color-mix(in srgb, #5c6bc0 14%, transparent); /* drag-to-create preview fill */
+}</pre>
+      </div>
+    </section>
+
+    <section class="demo-section">
+      <p class="demo-section__title">Reference — calendar-specific tokens</p>
+      <p class="demo-sub">
+        Every visual role has its own token, so you can retarget exactly one of them (just the
+        header text, say) without any side effect on anything else.
+      </p>
+      <table class="demo-table">
+        <thead><tr><th>Token</th><th>Default</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td><code>--lkc-cell-min-height</code></td><td><code>6.5rem</code></td><td>month view: minimum day-cell height</td></tr>
+          <tr><td><code>--lkc-event-height</code></td><td><code>1.5rem</code></td><td>month/all-day chip height</td></tr>
+          <tr><td><code>--lkc-grid-line</code></td><td><code>var(--lk-border)</code></td><td>every grid border</td></tr>
+          <tr><td><code>--lkc-header-bg</code></td><td><code>var(--lk-bg)</code></td><td>weekday row (month) / day-header row (week, day) background</td></tr>
+          <tr><td><code>--lkc-header-color</code></td><td><code>var(--lk-text-muted)</code></td><td>weekday/day-header text (also the agenda day heading)</td></tr>
+          <tr><td><code>--lkc-date-color</code></td><td><code>var(--lk-text)</code></td><td>date numbers (month view, week/day header)</td></tr>
+          <tr><td><code>--lkc-date-muted-color</code></td><td><code>color-mix(…, var(--lk-text-muted) 72%, transparent)</code></td><td>out-of-month date numbers</td></tr>
+          <tr><td><code>--lkc-time-color</code></td><td><code>var(--lk-text-muted)</code></td><td>hour labels (week/day view)</td></tr>
+          <tr><td><code>--lkc-event-color</code></td><td><code>var(--lk-primary)</code></td><td>default event chip color (overridden per-event via <code>event.color</code>; see <a href="#per-event-color">below</a>)</td></tr>
+          <tr><td><code>--lkc-today-bg</code></td><td><code>color-mix(…, var(--lk-primary) 7%, transparent)</code></td><td>today's cell/column background tint</td></tr>
+          <tr><td><code>--lkc-today-accent</code></td><td><code>var(--lk-primary)</code></td><td>today's filled date circle (month) / highlighted header text (week, day)</td></tr>
+          <tr><td><code>--lkc-today-color</code></td><td><code>var(--lk-primary-contrast)</code></td><td>text color on top of <code>--lkc-today-accent</code></td></tr>
+          <tr><td><code>--lkc-weekend-bg</code></td><td><code>color-mix(…, var(--lk-text) 2.5%, transparent)</code></td><td>out-of-month day tint</td></tr>
+          <tr><td><code>--lkc-selection-bg</code></td><td><code>color-mix(…, var(--lk-primary) 14%, transparent)</code></td><td>drag-to-create preview fill (month range select, time-grid range select)</td></tr>
+          <tr><td><code>--lkc-selection-border</code></td><td><code>var(--lk-primary)</code></td><td>drag-to-create preview border/outline</td></tr>
+          <tr><td><code>--lkc-mark-tint</code></td><td><code>16%</code></td><td>how strongly a marked day's own color tints its cell/column — see <a href="#marking-days">below</a></td></tr>
+        </tbody>
+      </table>
+      <p class="demo-sub" style="margin-top:var(--lk-space-4);">
+        Everything else (radii, spacing, font sizes, transitions) is a plain LookUI token —
+        <code>--lk-border</code>, <code>--lk-radius</code>, <code>--lk-space-*</code>,
+        <code>--lk-text-*</code>, and so on.
+      </p>
+    </section>
+
+    <section class="demo-section" id="marking-days">
+      <p class="demo-section__title">Try it — marking days with a color (no event required)</p>
+      <p class="demo-sub">
+        <code>markedDays</code> colors specific days independent of any event — weekends, public
+        holidays, blackout dates. A marked day with no events of its own still shows up (with an
+        otherwise-empty group) in agenda view, instead of silently disappearing.
+      </p>
+
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <div class="demo-row">
+            <label><input type="checkbox" id="m-weekends" checked /> Mark weekends</label>
+            <label>Color <input type="color" id="m-weekend-color" value="#eceff1" /></label>
+            <label><input type="checkbox" id="m-holiday" checked /> Mark Aug 17 every year (label: "Independence Day")</label>
+            <label>Color <input type="color" id="m-holiday-color" value="#ef9a9a" /></label>
+          </div>
+          <div id="mark-calendar"></div>
+        </div>
+      </div>
+
+      <div class="demo-usage">
+        <p class="demo-usage__title">JavaScript</p>
+        <pre>lkCalendar('#calendar', {
+  markedDays: [
+    { weekday: [0, 6], color: '#eceff1', label: 'Weekend' },
+    { date: '08-17', color: '#ef9a9a', label: 'Independence Day' }, // every year
+    { from: '2026-12-24', to: '2026-12-26', color: '#8d6e63', label: 'Office closed' },
+  ],
+});
+
+// Change the rules on an already-mounted calendar:
+calendar.setMarkedDays([{ weekday: [0, 6], color: '#eceff1' }]);</pre>
+      </div>
+
+      <table class="demo-table" style="margin-top:var(--lk-space-4);">
+        <thead><tr><th>Rule shape</th><th>Matches</th></tr></thead>
+        <tbody>
+          <tr><td><code>'YYYY-MM-DD'</code></td><td>one specific day (default color)</td></tr>
+          <tr><td><code>{ date: 'MM-DD', color, label? }</code></td><td>every year on this month/day</td></tr>
+          <tr><td><code>{ date: 'YYYY-MM-DD', color, label? }</code></td><td>one specific day</td></tr>
+          <tr><td><code>{ from, to, color, label? }</code></td><td>an inclusive date range</td></tr>
+          <tr><td><code>{ weekday: number[], color, label? }</code></td><td>0 (Sun)…6 (Sat), every week</td></tr>
+          <tr><td><code>(date) =&gt; string | { color, label? } | false</code></td><td>a function, used as the matcher itself</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="demo-section" id="per-event-color">
+      <p class="demo-section__title">Per-event color — coloring by calendar, automatic</p>
+      <p class="demo-sub">
+        Every event resolves to an <strong>effective color</strong>, in priority order: its own
+        <code>event.color</code> if you set one; otherwise its calendar's <code>color</code>
+        (<code>calendars: [{ id, name, color }]</code>); otherwise — since <code>autoColor</code>
+        defaults to <code>true</code> — a <strong>stable, deterministic color</strong> hashed from
+        the event's id, picked from a small built-in palette, so uncolored events still look
+        visually distinct from each other instead of all collapsing onto one color; or, with
+        <code>autoColor: false</code>, the CSS default (<code>--lkc-event-color</code>, i.e.
+        <code>--lk-primary</code>). This is resolved by <code>calendarStore</code> itself — every
+        read (<code>add</code>, <code>update</code>, <code>get</code>, <code>all</code>,
+        <code>between</code>, including expanded recurring instances) returns the effective color,
+        so you never have to look it up yourself. Try it live on the
+        <a href="index.html">Overview</a> page's color picker.
+      </p>
+      <div class="demo-usage">
+        <p class="demo-usage__title">JavaScript</p>
+        <pre>const store = createCalendarStore({
+  calendars: [
+    { id: 'work', name: 'Work', color: '#5c6bc0' },
+    { id: 'personal', name: 'Personal', color: '#00bcd4' },
+  ],
+  // autoColor: true is the default — pass false to go back to everything
+  // uncolored sharing the single CSS default instead.
+});
+
+store.add({ calendarId: 'work', title: 'Standup', start, end });
+// -> event.color === '#5c6bc0' (inherited from the "work" calendar)
+
+store.add({ calendarId: 'work', title: 'Urgent fix', color: '#c62828', start, end });
+// -> event.color === '#c62828' (explicit color always wins)
+
+store.add({ title: 'Quick note', start, end }); // no calendarId, no color
+// -> event.color === one of a dozen built-in hues, picked from this event's own id —
+//    the SAME color every time this exact event is read again
+
+// Recolor a whole calendar at once — every event in it updates immediately:
+store.setCalendars([{ id: 'work', name: 'Work', color: '#ff9800' }]);
+
+// Recolor one event directly — an explicit color always overrides auto/calendar color:
+store.update(event.id, { color: '#ab47bc' });</pre>
+      </div>
+    </section>
+
+</main>
+
+<footer class="demo-footer">
+  LookCalendar — MIT License — built on <a href="https://github.com/bambangy/LookUI">LookUI</a>
+</footer>
+
+<script src="../node_modules/@lookui/core/dist/look.js"></script>
+<script src="../dist/look-calendar.js"></script>
+<script src="docs.js"></script>
+<script>
+(function () {
+  const now = new Date();
+  LookCalendar.lkCalendar('#theme-calendar', {
+    view: 'month',
+    events: [
+      { title: 'Design review', start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10), end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 11) },
+      { title: 'Offsite', allDay: true, start: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2), end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 4) },
+    ],
+  });
+
+  const root = document.documentElement;
+  const TOKEN_CONTROLS = {
+    't-header': '--lkc-header-color',
+    't-date': '--lkc-date-color',
+    't-time': '--lkc-time-color',
+    't-event': '--lkc-event-color',
+    't-today': '--lkc-today-accent',
+    't-selection': '--lkc-selection-border',
+  };
+  Object.entries(TOKEN_CONTROLS).forEach(([id, token]) => {
+    document.getElementById(id).addEventListener('input', (e) => root.style.setProperty(token, e.target.value));
+  });
+  document.getElementById('t-selection').addEventListener('input', (e) => {
+    root.style.setProperty('--lkc-selection-bg', `color-mix(in srgb, ${e.target.value} 14%, transparent)`);
+  });
+  document.getElementById('t-reset').addEventListener('click', () => {
+    [...Object.values(TOKEN_CONTROLS), '--lkc-selection-bg'].forEach((p) => root.style.removeProperty(p));
+    document.getElementById('t-header').value = '#757575';
+    document.getElementById('t-date').value = '#1a1a2e';
+    document.getElementById('t-time').value = '#757575';
+    document.getElementById('t-event').value = '#5c6bc0';
+    document.getElementById('t-today').value = '#5c6bc0';
+    document.getElementById('t-selection').value = '#5c6bc0';
+  });
+})();
+
+(function () {
+  const now = new Date();
+  function rules() {
+    const list = [];
+    if (document.getElementById('m-weekends').checked) {
+      list.push({ weekday: [0, 6], color: document.getElementById('m-weekend-color').value, label: 'Weekend' });
+    }
+    if (document.getElementById('m-holiday').checked) {
+      list.push({ date: '08-17', color: document.getElementById('m-holiday-color').value, label: 'Independence Day' });
+    }
+    return list;
+  }
+
+  const markCalendar = LookCalendar.lkCalendar('#mark-calendar', {
+    view: 'month',
+    date: new Date(now.getFullYear(), 7, 1), // August, so the yearly holiday rule is visible
+    markedDays: rules(),
+  });
+
+  ['m-weekends', 'm-weekend-color', 'm-holiday', 'm-holiday-color'].forEach((id) => {
+    document.getElementById(id).addEventListener('input', () => markCalendar.setMarkedDays(rules()));
+  });
+})();
+</script>
+
+</body>
+</html>

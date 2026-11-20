@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookCalendar
+/*!
+ * LookCalendar (c) 2026 Bambang Yudhotomo | https://github.com/bambangy/LookCalendar
+ * Released under the MIT License. This notice must be retained in all copies.
+ */
+
+// LookCalendar ships as a thin layer on top of LookUI's own tokens/components — it assumes
+// @lookui/core's look.css is already loaded on the page (buttons, modal, inputs, icons, …).
+
+@use 'tokens/calendar' as token-calendar;
+@use 'components/calendar' as component-calendar;

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LookCalendar — API reference</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='17' rx='2' fill='%235c6bc0'/%3E%3Crect x='3' y='4' width='18' height='5' rx='2' fill='%233949ab'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../node_modules/@lookui/core/dist/look.css" />
+<link rel="stylesheet" href="../dist/look-calendar.css" />
+<link rel="stylesheet" href="shared.css" />
+<link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <div class="demo-header__top">
+      <a href="index.html" class="demo-header__brand">📅 LookCalendar</a>
+      <nav class="demo-nav">
+        <a href="index.html">Overview</a>
+        <a href="views.html">Views</a>
+        <a href="recurrence.html">Events &amp; recurrence</a>
+        <a href="customization.html">Customization</a>
+        <a href="theming.html">Theming</a>
+        <a href="api.html" aria-current="page">API reference</a>
+        <a href="https://github.com/bambangy/LookCalendar">GitHub ↗</a>
+      </nav>
+    </div>
+    <p class="demo-header__tagline"><code>lkCalendar(el, opts)</code> — options, guard hooks, properties and methods.</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <div class="demo-pill-group" style="margin-bottom: var(--lk-space-5);">
+    <a class="demo-pill demo-pill--active" href="api.html">lkCalendar</a>
+    <a class="demo-pill" href="api-calendar-store.html">createCalendarStore</a>
+    <a class="demo-pill" href="api-month-view.html">createMonthView</a>
+    <a class="demo-pill" href="api-timegrid-view.html">createTimeGridView</a>
+    <a class="demo-pill" href="api-agenda-view.html">createAgendaView</a>
+    <a class="demo-pill" href="api-event-form.html">createEventForm</a>
+    <a class="demo-pill" href="api-ics.html">exportICS / importICS</a>
+  </div>
+  <div id="api"></div>
+</main>
+
+<footer class="demo-footer">
+  LookCalendar — MIT License — built on <a href="https://github.com/bambangy/LookUI">LookUI</a>
+</footer>
+
+<script src="../node_modules/@lookui/core/dist/look.js"></script>
+<script src="../dist/look-calendar.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkCalendar',
+  kind: 'Component',
+  signature: ["const calendar = lkCalendar(el, opts);"],
+  description: [
+    'The orchestrator: a toolbar (prev/today/next, a jump-to-date `lkDate` picker, the view switcher, "New event"), the active view (month/week/day/agenda), and the built-in [`createEventForm()`](customization.html)-based create/edit dialog — all wired to one `createCalendarStore()`.',
+    'Every piece it is built from is independently importable, each with its own complete API reference: [createCalendarStore](api-calendar-store.html), [createMonthView](api-month-view.html), [createTimeGridView](api-timegrid-view.html), [createAgendaView](api-agenda-view.html), [createEventForm](api-event-form.html).',
+  ],
+  params: [
+    { name: 'el', type: 'Element | string', description: 'Mount point.' },
+    { name: 'opts', type: 'Object', optional: true, description: 'Configuration — see **Configuration** below.' },
+  ],
+  returns: { type: 'Object', description: 'The calendar instance — see **Properties** and **Methods** below.' },
+
+  options: [
+    { name: 'view', type: "'month'|'week'|'day'|'agenda'", default: "'month'", description: 'Initial view.' },
+    { name: 'date', type: 'Date | string', default: 'new Date()', description: 'Initial visible date.' },
+    { name: 'events', type: 'Array', default: '[]', description: 'Initial events. Ignored if `store` is given.' },
+    { name: 'calendars', type: 'Array<{id,name,color}>', default: "one 'default' calendar", description: 'Used by the built-in form\'s picker and as the event color fallback — see [Theming](theming.html#per-event-color).' },
+    { name: 'store', type: 'calendarStore', description: 'A store from `createCalendarStore()`. Share one store across multiple mounted calendars; owns its own lifecycle (`destroy()` won\'t touch it) if given.' },
+    { name: 'locale', type: 'string', description: 'BCP 47 locale, passed to every `Intl` call.' },
+    {
+      name: 'timezone', type: 'string',
+      description: 'An IANA zone (e.g. \'America/New_York\') "today", every view\'s day/week/month boundaries, displayed times and recurring events\' cadence are computed in. Omit to use the viewer\'s own machine zone (unchanged pre-timezone-support behavior). An event\'s own `event.timezone` overrides this for that event\'s recurrence cadence — see [Events & recurrence](recurrence.html#timezones).',
+      examples: [{ run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        LookCalendar.lkCalendar(el, {
+          timezone: 'America/New_York',
+          events: [{ title: 'Standup', start: new Date(2026, 0, 15, 14), end: new Date(2026, 0, 15, 15) }],
+        });
+        log('Chip time now reads in America/New_York, regardless of your own machine\\'s zone.');` }],
+    },
+    { name: 'weekStartsOn', type: '0–6', default: '0', description: '0 = Sunday.' },
+    { name: 'editable', type: 'boolean', default: 'true', description: '`false` disables the built-in edit dialog and drag/resize globally (per-event: `event.editable`).' },
+    { name: 'selectable', type: 'boolean', default: 'true', description: '`false` disables drag-to-create.' },
+    { name: 'startHour', type: 'number', default: '0', description: 'Week/day view: first visible hour.' },
+    { name: 'endHour', type: 'number', default: '24', description: 'Week/day view: last visible hour.' },
+    { name: 'slotMinutes', type: 'number', default: '30', description: 'Week/day view: snap/selection granularity.' },
+    { name: 'slotHeight', type: 'number (px)', default: '24', description: 'Week/day view: pixels per `slotMinutes`.' },
+    {
+      name: 'showNowLine', type: 'boolean', default: 'true',
+      description: 'Week/day view: a live line across today\'s column at the current time, repositioned every 30s.',
+      examples: [{ run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        LookCalendar.lkCalendar(el, { view: 'week', showNowLine: true });
+        log('Look for the red line crossing today\\'s column.');` }],
+    },
+    {
+      name: 'businessHours', type: 'Object',
+      description: 'Week/day view: shade the hours/days outside it — `{ start: 9, end: 17, days: [1,2,3,4,5] }`. Any key you omit keeps that dimension unrestricted.',
+      examples: [{ run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        LookCalendar.lkCalendar(el, {
+          view: 'week',
+          businessHours: { start: 9, end: 17, days: [1, 2, 3, 4, 5] },
+        });` }],
+    },
+    {
+      name: 'hideWeekends', type: 'boolean', default: 'false',
+      description: 'Month view: don\'t render Saturday/Sunday columns. A multi-day span confined entirely to a hidden day is skipped; one crossing a hidden day clips to the nearest visible one instead of disappearing.',
+    },
+    { name: 'maxEventsPerDay', type: 'number', default: '3', description: 'Month view: lane cap before "+N more".' },
+    {
+      name: 'multiDayStyle', type: "'continuous'|'block'", default: "'continuous'",
+      description: 'Month view: render a multi-day event as one seamless bar across its days, or as a separate chip per day — see [Views](views.html#multi-day-style).',
+      values: [["'continuous'", 'one seamless bar (default)'], ["'block'", 'a separate chip per day']],
+    },
+    {
+      name: 'autoColor', type: 'boolean', default: 'true',
+      description: 'Give an event with no explicit/calendar color a stable, deterministic color from a small palette instead of the single CSS default — see [Theming](theming.html#per-event-color). Ignored if `store` is given (set it on `createCalendarStore()` instead).',
+    },
+    {
+      name: 'markedDays', type: 'Array | Function',
+      description: 'Color specific days independent of any event (weekends, public holidays, blackout dates) — see [Theming](theming.html#marking-days) for every rule shape.',
+      examples: [{ run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        LookCalendar.lkCalendar(el, {
+          date: new Date(2026, 0, 1),
+          markedDays: [{ weekday: [0, 6], color: '#eceff1', label: 'Weekend' }],
+        });` }],
+    },
+    { name: 'agendaRangeDays', type: 'number', default: '30', description: 'Agenda view: how many days ahead of `date` to list; also the step `prev`/`next` page by in that view.' },
+    {
+      name: 'eventIcon', type: 'Function',
+      description: 'Signature: `(event) => iconSpec`. Fallback icon template for events with no `event.icon` of their own — a per-event `icon` always wins. An `iconSpec` is a `@lookui/core` icon name, `{ lookui, size }`, `{ html }`, `{ url, alt }`, `{ emoji }`, a DOM node, or a function returning any of those — see [Views](views.html#event-icons).',
+      examples: [{ run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        LookCalendar.lkCalendar(el, {
+          view: 'week',
+          eventIcon: (event) => (event.title.includes('Call') ? { emoji: '📞' } : 'calendar'),
+          events: [{ title: 'Client Call', start: new Date(2026, 0, 15, 9), end: new Date(2026, 0, 15, 9, 30) }],
+        });
+        log('Event chips now show a time range on line one, title on line two, with an icon.');` }],
+    },
+    {
+      name: 'eventForm', type: 'string | Function',
+      description: 'Replaces the built-in form markup for **both** create and edit (see [Customization](customization.html)). A function template also receives `mode: \'create\' | \'edit\'`.',
+    },
+    { name: 'newEventForm', type: 'string | Function', description: 'Replaces `eventForm` for the create dialog only.' },
+    { name: 'editEventForm', type: 'string | Function', description: 'Replaces `eventForm` for the edit dialog only.' },
+    { name: 'text', type: 'Object', description: "i18n overrides, namespace `'calendar'`." },
+    { name: 'onCreate', type: 'Function', description: 'Signature: `(event, { component }) => void`.' },
+    { name: 'onChange', type: 'Function', description: 'Signature: `(event, { component }) => void`. Fires for edits made through the built-in form **and** for drag-move/drag-resize.' },
+    { name: 'onRemove', type: 'Function', description: 'Signature: `(event, { component }) => void`.' },
+    { name: 'onViewChange', type: 'Function', description: 'Signature: `(view, { component }) => void`.' },
+    { name: 'onDateChange', type: 'Function', description: 'Signature: `(date, { component }) => void`.' },
+    { name: 'onEventClick', type: 'Function', description: 'Signature: `(event, { domEvent, component }) => void` — fires **before** the built-in edit dialog opens.' },
+  ],
+
+  guards: [
+    {
+      name: 'beforeCreate', signature: 'beforeCreate(values, { source, component })',
+      description: 'Vetoes/replaces a create from the built-in form. `false`/`Promise<false>` cancels; any other returned object replaces the values that get saved.',
+    },
+    {
+      name: 'beforeChange', signature: 'beforeChange(values, { source, component, event })',
+      description: 'Vetoes/replaces an edit — fires for the built-in form **and** for drag-move/drag-resize, with `ctx.event` the event being changed either way.',
+    },
+    { name: 'beforeRemove', signature: 'beforeRemove(event, { source, component })', description: 'Vetoes a delete (from the built-in edit dialog).' },
+    { name: 'beforeViewChange', signature: 'beforeViewChange(view, { source, component })', description: 'Vetoes/replaces a view switch.' },
+    { name: 'beforeDateChange', signature: 'beforeDateChange(date, { source, component })', description: 'Vetoes/replaces navigation (prev/next/today/jump-to-date/`calendar.date =`).' },
+  ],
+
+  properties: [
+    { name: 'date', type: 'Date', description: 'Get/set the visible date. Setting goes through `beforeDateChange`.' },
+    { name: 'view', type: "'month'|'week'|'day'|'agenda'", description: 'Get/set the active view. Setting goes through `beforeViewChange`.' },
+    { name: 'store', type: 'calendarStore', readonly: true, description: 'The underlying `createCalendarStore()` instance.' },
+    { name: 'text', type: 'Object', description: 'Current i18n overrides for this instance (namespace `calendar`). Assignable at runtime.' },
+  ],
+
+  methods: [
+    { name: 'next', signature: 'next() → void', description: 'Advance by one month/week/day, or one `agendaRangeDays` window in agenda view.' },
+    { name: 'prev', signature: 'prev() → void', description: 'The reverse of `next()`.' },
+    { name: 'today', signature: 'today() → void', description: 'Jump to today.' },
+    { name: 'changeView', signature: "changeView(view) → void", description: "Switch the active view — same as `calendar.view = view`." },
+    {
+      name: 'addEvent', signature: 'addEvent(input) → event', description: 'Adds straight to the store and re-renders. Does **not** run `beforeCreate` — that only guards the built-in form.',
+      examples: [{ run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        const calendar = LookCalendar.lkCalendar(el, { date: new Date(2026, 0, 15) });
+        const event = calendar.addEvent({ title: 'Kickoff', start: new Date(2026, 0, 15, 9), end: new Date(2026, 0, 15, 10) });
+        log('added:', event.title, '-> color', event.color);` }],
+    },
+    { name: 'updateEvent', signature: 'updateEvent(id, patch) → event | null', description: 'Straight to the store, no `beforeChange` guard.' },
+    { name: 'removeEvent', signature: 'removeEvent(id) → boolean', description: 'Straight to the store, no `beforeRemove` guard.' },
+    { name: 'getEvent', signature: 'getEvent(id) → event | null', description: '' },
+    { name: 'refresh', signature: 'refresh() → void', description: 'Re-render the active view without changing date or view — use after mutating the store outside the built-in flow (the store\'s own `add`/`update`/`remove` already trigger this via its change subscription).' },
+    {
+      name: 'setMarkedDays', signature: 'setMarkedDays(rules) → void',
+      description: 'Updates `markedDays` on an already-mounted calendar and re-renders — see [Theming](theming.html#marking-days).',
+    },
+    {
+      name: 'exportICS', signature: 'exportICS(opts?) → string',
+      description: 'Every event in the calendar\'s store, serialized as an RFC 5545 `.ics` (VCALENDAR) string — see [exportICS/importICS](api-ics.html). `opts` overrides: `{ calendarName, productId, timezone }` (`timezone` defaults to `opts.timezone` this calendar was created with).',
+      examples: [{ run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        const calendar = LookCalendar.lkCalendar(el, { date: new Date(2026, 0, 15) });
+        calendar.addEvent({ title: 'Kickoff', start: new Date(2026, 0, 15, 9), end: new Date(2026, 0, 15, 10) });
+        log(calendar.exportICS());` }],
+    },
+    {
+      name: 'importICS', signature: 'importICS(icsText) → event[]',
+      description: 'Parses an `.ics` string and adds every VEVENT straight to the store (no `beforeCreate` guard), then re-renders — see [exportICS/importICS](api-ics.html).',
+    },
+    { name: 'destroy', signature: 'destroy() → void', description: 'Tears down listeners, the active view, and (only if `lkCalendar` created it) the store.' },
+  ],
+
+  notes: [
+    'i18n: LookCalendar registers its strings under the `\'calendar\'` namespace with `Look.i18n` — the same global registry LookUI\'s own components use (`Look.i18n.set(\'id\', { \'calendar.today\': \'Hari ini\' }); Look.i18n.use(\'id\');`), or per-instance via `opts.text` / `calendar.text = {...}`.',
+    'Editing or deleting one instance of a recurring event — through the built-in dialog, or by dragging to move/resize it — asks **this event / this and following events / all events**, the same choice every mainstream calendar app gives you. Underneath, that calls `store.updateOccurrence(instance, patch, scope)` / `store.removeOccurrence(instance, scope)` — see [Events & recurrence](recurrence.html#single-occurrence-editing). `addEvent`/`updateEvent`/`removeEvent` on the calendar instance always act on the whole series (same as `scope: \'all\'`) and never show this prompt.',
+    'Keyboard: the toolbar, "+N more" popover, agenda rows and the built-in dialog\'s buttons are plain `<button>`s, so Tab/Enter/Space already work there for free. Event chips (month/week/day) are focusable and open on Enter/Space; month view\'s day grid is a roving-tabindex ARIA grid (arrow keys move the focused day, Enter/Space opens the create dialog for it) — see [createMonthView](api-month-view.html) and [createTimeGridView](api-timegrid-view.html) for exactly what each view covers.',
+  ],
+});
+</script>
+
+</body>
+</html>

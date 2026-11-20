@@ -1,0 +1,49 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookCalendar
+// Calendar-specific tokens — layered on top of LookUI's own tokens (--lk-*), never a parallel
+// palette. Override any of these the same way you override LookUI tokens: redefine them in :root.
+// Every visual "role" below (header, date numbers, time labels, today, selection, …) has its own
+// token so you can retarget exactly one of them without side effects on anything else.
+
+:root {
+  // --- Layout ---
+  --lkc-cell-min-height: 6.5rem;
+  --lkc-event-height: 1.5rem;
+  --lkc-grid-line: var(--lk-border);
+
+  // --- Header (weekday row in month view; day header row in week/day view) ---
+  --lkc-header-bg: var(--lk-bg);
+  --lkc-header-color: var(--lk-text-muted);
+
+  // --- Date numbers (month view day cells) ---
+  --lkc-date-color: var(--lk-text);
+  --lkc-date-muted-color: color-mix(in srgb, var(--lk-text-muted) 72%, transparent);
+
+  // --- Time labels (time-grid hour column) ---
+  --lkc-time-color: var(--lk-text-muted);
+
+  // --- Events — default color when an event has no explicit/calendar color and autoColor is off
+  // (autoColor is on by default, so most events never fall through to this) ---
+  --lkc-event-color: var(--lk-primary);
+
+  // --- Today ---
+  --lkc-today-bg: color-mix(in srgb, var(--lk-primary) 7%, transparent); // today's cell/column tint
+  --lkc-today-accent: var(--lk-primary); // today's date-number circle (month) / highlighted header text (week/day)
+  --lkc-today-color: var(--lk-primary-contrast); // text color on top of --lkc-today-accent
+
+  // --- Out-of-month days (month view) ---
+  --lkc-weekend-bg: color-mix(in srgb, var(--lk-text) 2.5%, transparent);
+
+  // --- Drag-to-create selection preview (month range select, time-grid range select) ---
+  --lkc-selection-bg: color-mix(in srgb, var(--lk-primary) 14%, transparent);
+  --lkc-selection-border: var(--lk-primary);
+
+  // --- Marked days (opts.markedDays — weekends/holidays/blackout dates, no event required) ---
+  // Each mark also carries its own `--lkc-mark-color` set inline per day; this token only
+  // controls how strongly that color tints the cell/column background.
+  --lkc-mark-tint: 16%;
+
+  // --- Time grid (week/day view) ---
+  --lkc-now-color: var(--lk-negative); // the live "current time" line
+  --lkc-offhours-bg: color-mix(in srgb, var(--lk-text) 4%, transparent); // opts.businessHours shading
+}

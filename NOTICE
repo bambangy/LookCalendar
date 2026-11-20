@@ -1,0 +1,14 @@
+LookCalendar
+Copyright (c) 2026 Bambang Yudhotomo
+https://github.com/bambangy/LookCalendar
+
+This product is licensed under the MIT License (see LICENSE).
+
+The MIT License requires that the above copyright notice and the permission
+notice be included in all copies or substantial portions of the Software,
+including bundled, minified, or redistributed builds of dist/look-calendar.js
+and dist/look-calendar.css. Do not remove the "/*! LookCalendar ... */"
+banners from those files.
+
+LookCalendar is built as a companion to LookUI (https://github.com/bambangy/LookUI)
+and declares @lookui/core as a peer dependency.

@@ -1,0 +1,653 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookCalendar
+
+.lkc-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lk-space-3);
+  color: var(--lk-text);
+  font-size: var(--lk-text-sm);
+}
+
+// --- Toolbar -------------------------------------------------------------------------------
+
+.lkc-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-3);
+  flex-wrap: wrap;
+}
+
+.lkc-toolbar__nav {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+}
+
+.lkc-toolbar__title {
+  font-size: var(--lk-text-sm);
+  font-weight: var(--lk-weight-semibold);
+  min-width: 10rem;
+}
+
+.lkc-toolbar__views {
+  display: inline-flex;
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius);
+  overflow: hidden;
+  margin-left: auto;
+}
+
+.lkc-toolbar__view-btn {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  background: var(--lk-bg);
+  color: var(--lk-text-muted);
+  // Same --lk-control-height-sm token .lk-btn--sm uses, so every toolbar control — nav, the
+  // view switch, New event — shares one row height regardless of its own content.
+  min-height: var(--lk-control-height-sm);
+  font-size: var(--lk-text-sm);
+  font-weight: var(--lk-weight-medium);
+  padding: 0 var(--lk-space-3);
+  line-height: var(--lk-line-height);
+  cursor: pointer;
+  transition: background-color var(--lk-duration-fast) var(--lk-easing-default);
+
+  & + & { border-left: var(--lk-border-width) solid var(--lk-border); }
+
+  &:hover:not(&--active) { background: var(--lk-bg-subtle); }
+}
+
+.lkc-toolbar__view-btn--active {
+  background: var(--lk-primary);
+  color: var(--lk-primary-contrast);
+}
+
+.lkc-viewport {
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius-xl);
+  overflow: hidden;
+  background: var(--lk-bg);
+}
+
+// --- Event chip (shared across month / time grid / all-day row) ----------------------------
+
+.lkc-event {
+  --chip-color: var(--lkc-event-color);
+
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+  min-height: var(--lkc-event-height);
+  padding: 0.0625rem var(--lk-space-2);
+  margin: 0.0625rem var(--lk-space-1);
+  border-radius: var(--lk-radius-sm);
+  background: color-mix(in srgb, var(--chip-color) 16%, var(--lk-bg));
+  color: color-mix(in srgb, var(--chip-color) 70%, var(--lk-text));
+  border-left: 3px solid var(--chip-color);
+  font-size: var(--lk-text-xs);
+  line-height: 1.3;
+  cursor: pointer;
+  overflow: hidden;
+  user-select: none;
+  touch-action: none;
+  transition: box-shadow var(--lk-duration-fast) var(--lk-easing-default);
+
+  &:hover { box-shadow: 0 1px 4px color-mix(in srgb, var(--chip-color) 30%, transparent); }
+}
+
+.lkc-event--spacer {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.lkc-event--start { margin-left: var(--lk-space-1); border-top-left-radius: var(--lk-radius-sm); border-bottom-left-radius: var(--lk-radius-sm); }
+.lkc-event--end { margin-right: var(--lk-space-1); border-top-right-radius: var(--lk-radius-sm); border-bottom-right-radius: var(--lk-radius-sm); }
+
+// Multi-day "continuous" bar (month view, multiDayStyle: 'continuous', the default): one chip,
+// planted on the start day, is given an explicit `width` in month.js that stretches it across
+// every day it spans — so the title/time only render once and the bar reads as one unbroken
+// shape, not a per-day chip glued to its neighbors. `position: relative` + a positive `z-index`
+// lifts it above the following days' own cell borders/backgrounds, which would otherwise repaint
+// over the part of the bar that overflows past its own day column (in plain document flow, a
+// later sibling's own box always paints over an earlier sibling's overflowing content).
+.lkc-event--continuous {
+  position: relative;
+  z-index: 2;
+}
+
+.lkc-event__time-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  width: 100%;
+  min-width: 0;
+}
+
+.lkc-event__time {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lkc-event__title {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lkc-event__icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+.lkc-event__icon-img {
+  width: 1em;
+  height: 1em;
+  object-fit: contain;
+  border-radius: 2px;
+  vertical-align: -0.125em;
+}
+
+.lkc-event__icon-emoji,
+.lkc-event__icon-html {
+  display: inline-flex;
+  line-height: 1;
+}
+
+// A timed event (has a time range, so there's a second line to show): time row on top, title
+// below. --lkc-event-height is the *compact*, one-line height; the two-line form is ~1.7× that.
+// A container query (not a JS/event-count heuristic) decides which one actually renders, so it
+// reacts to real available space, however it got small — a narrow column, a crowded day, or an
+// overlapping-event split — not a guess about why.
+.lkc-event--timed {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  min-height: calc(var(--lkc-event-height) * 1.7);
+  container-type: inline-size;
+  container-name: lkc-event;
+}
+
+// Time-grid chips get real pixel height/width at render time (chip.style.height/.width), so their
+// container can safely query both axes — a brief event is "too small" by height, an overlapping
+// one squeezed into a slim column is "too small" by width.
+.lkc-timegrid__col .lkc-event--timed {
+  position: absolute;
+  margin: 0 1px;
+  container-type: size;
+}
+
+@container lkc-event (max-width: 4.75rem) or (max-height: 2.1rem) {
+  .lkc-event--timed {
+    flex-direction: row;
+    align-items: center;
+    min-height: var(--lkc-event-height);
+  }
+
+  .lkc-event--timed > .lkc-event__title {
+    display: none;
+  }
+
+  .lkc-event--timed > .lkc-event__time-row {
+    flex: 1;
+    min-width: 0;
+  }
+
+  // Hovering (or focusing) a collapsed chip pops it back open to the full two-line form —
+  // overlapping, not pushing, whatever sits below it in the same lane/column: the chip's own
+  // start position is unchanged (no negative top margin), only its bottom edge grows past its
+  // normal box, via a matching negative bottom margin so later siblings don't shift down.
+  .lkc-event--timed:hover,
+  .lkc-event--timed:focus-within {
+    flex-direction: column;
+    align-items: stretch;
+    position: relative;
+    z-index: 6;
+    min-height: calc(var(--lkc-event-height) * 1.7);
+    margin-bottom: calc(-1 * (var(--lkc-event-height) * 1.7 - var(--lkc-event-height)));
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--chip-color) 40%, transparent);
+  }
+
+  .lkc-event--timed:hover > .lkc-event__title,
+  .lkc-event--timed:focus-within > .lkc-event__title {
+    display: block;
+  }
+}
+
+.lkc-event--dragging,
+.lkc-event--resizing {
+  opacity: 0.85;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--chip-color) 40%, transparent);
+  z-index: 5;
+}
+
+// --- Month view ------------------------------------------------------------------------------
+
+.lkc-month__weekdays,
+.lkc-month__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--lkc-month-cols, 7), minmax(0, 1fr));
+}
+
+// Belt-and-suspenders alongside dragCreate.js's preventDefault(): nothing in the drag-to-select
+// surface should ever be selectable as text, on any input type.
+.lkc-month__grid {
+  user-select: none;
+  touch-action: none;
+}
+
+.lkc-month__weekdays {
+  background: var(--lkc-header-bg);
+  border-bottom: var(--lk-border-width) solid var(--lkc-grid-line);
+}
+
+.lkc-month__weekday {
+  padding: var(--lk-space-2);
+  text-align: center;
+  font-size: var(--lk-text-xs);
+  font-weight: var(--lk-weight-semibold);
+  color: var(--lkc-header-color);
+  text-transform: uppercase;
+}
+
+.lkc-month__cell {
+  position: relative;
+  min-height: var(--lkc-cell-min-height);
+  padding: var(--lk-space-1);
+  border-right: var(--lk-border-width) solid var(--lkc-grid-line);
+  border-bottom: var(--lk-border-width) solid var(--lkc-grid-line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+// The column count varies (opts.hideWeekends), so :nth-child(7n) can't find the row's last cell
+// anymore — month.js flags it directly instead.
+.lkc-month__cell--col-last {
+  border-right: 0;
+}
+
+.lkc-month__cell--muted {
+  color: var(--lk-text-muted);
+  background: var(--lkc-weekend-bg);
+}
+
+.lkc-month__cell--today {
+  background: var(--lkc-today-bg);
+}
+
+// A marked day (opts.markedDays) — each cell carries its own --lkc-mark-color inline. Painted
+// as a background tint so an event chip (or the today state) still reads on top of it; it comes
+// after --muted/--today in source order so an explicit mark wins when they overlap.
+.lkc-month__cell--marked {
+  background: color-mix(in srgb, var(--lkc-mark-color) var(--lkc-mark-tint), transparent);
+}
+
+.lkc-month__cell--selected {
+  // A transient user interaction — always wins over a day's own mark color.
+  background: var(--lkc-selection-bg);
+}
+
+.lkc-month__cell:focus-visible {
+  outline: 2px solid var(--lk-primary);
+  outline-offset: -2px;
+  z-index: 3;
+}
+
+.lkc-event:focus-visible {
+  outline: 2px solid var(--lk-primary);
+  outline-offset: -2px;
+}
+
+.lkc-month__date {
+  font-size: var(--lk-text-xs);
+  font-weight: var(--lk-weight-semibold);
+  color: var(--lkc-date-color);
+  align-self: flex-end;
+  padding: 0.125rem;
+}
+
+.lkc-month__cell--muted .lkc-month__date {
+  color: var(--lkc-date-muted-color);
+}
+
+.lkc-month__cell--today .lkc-month__date {
+  background: var(--lkc-today-accent);
+  color: var(--lkc-today-color);
+  border-radius: var(--lk-radius-full);
+  width: 1.4rem;
+  height: 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+}
+
+.lkc-month__events {
+  display: flex;
+  flex-direction: column;
+  gap: 0.0625rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.lkc-month__more {
+  border: 0;
+  background: transparent;
+  color: var(--lk-text-muted);
+  font-size: var(--lk-text-xs);
+  font-weight: var(--lk-weight-medium);
+  text-align: left;
+  padding: 0 var(--lk-space-1);
+  cursor: pointer;
+
+  &:hover { color: var(--lk-primary); text-decoration: underline; }
+}
+
+// --- Time grid (week / day) -------------------------------------------------------------------
+
+.lkc-timegrid__head {
+  display: grid;
+  grid-template-columns: 3.5rem repeat(var(--lkc-days), minmax(0, 1fr));
+  background: var(--lkc-header-bg);
+  border-bottom: var(--lk-border-width) solid var(--lkc-grid-line);
+}
+
+.lkc-timegrid__head::before { content: ''; }
+
+.lkc-timegrid__headcell {
+  text-align: center;
+  padding: var(--lk-space-2);
+  border-left: var(--lk-border-width) solid var(--lkc-grid-line);
+}
+
+.lkc-timegrid__headcell--marked {
+  background: color-mix(in srgb, var(--lkc-mark-color) var(--lkc-mark-tint), transparent);
+}
+
+.lkc-timegrid__headcell-dow {
+  font-size: var(--lk-text-xs);
+  font-weight: var(--lk-weight-semibold);
+  color: var(--lkc-header-color);
+  text-transform: uppercase;
+}
+
+.lkc-timegrid__headcell-num {
+  font-size: var(--lk-text-sm);
+  font-weight: var(--lk-weight-medium);
+  color: var(--lkc-date-color);
+}
+
+.lkc-timegrid__headcell--today .lkc-timegrid__headcell-num { color: var(--lkc-today-accent); }
+
+.lkc-timegrid__allday {
+  display: grid;
+  grid-template-columns: 3.5rem repeat(var(--lkc-days), minmax(0, 1fr));
+  grid-auto-rows: min-content;
+  gap: 0.0625rem;
+  padding: var(--lk-space-1) 0;
+  border-bottom: var(--lk-border-width) solid var(--lkc-grid-line);
+
+  &:empty { display: none; }
+
+  .lkc-event { grid-row: 1; }
+}
+
+.lkc-timegrid__body {
+  display: flex;
+  max-height: 42rem;
+  overflow-y: auto;
+}
+
+.lkc-timegrid__times {
+  flex: 0 0 3.5rem;
+  border-right: var(--lk-border-width) solid var(--lkc-grid-line);
+}
+
+.lkc-timegrid__time {
+  position: relative;
+  top: -0.5em;
+  padding-right: var(--lk-space-2);
+  text-align: right;
+  font-size: var(--lk-text-xs);
+  color: var(--lkc-time-color);
+}
+
+.lkc-timegrid__columns {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(var(--lkc-days), minmax(0, 1fr));
+  // Belt-and-suspenders alongside dragCreate.js's preventDefault(): nothing in the drag-to-select
+  // surface should ever be selectable as text, on any input type.
+  user-select: none;
+  touch-action: none;
+}
+
+.lkc-timegrid__col {
+  position: relative;
+  border-left: var(--lk-border-width) solid var(--lkc-grid-line);
+}
+
+.lkc-timegrid__col--today {
+  background: var(--lkc-today-bg);
+}
+
+// A marked day column — comes after --today so it wins when a marked day happens to be today.
+.lkc-timegrid__col--marked {
+  background: color-mix(in srgb, var(--lkc-mark-color) var(--lkc-mark-tint), transparent);
+}
+
+.lkc-timegrid__hourline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: var(--lk-border-width) dashed var(--lkc-grid-line);
+}
+
+.lkc-timegrid__offhours {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: var(--lkc-offhours-bg);
+  pointer-events: none;
+}
+
+.lkc-timegrid__now {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 2px solid var(--lkc-now-color);
+  z-index: 3;
+  pointer-events: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -4px;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--lk-radius-full);
+    background: var(--lkc-now-color);
+  }
+
+  &[hidden] { display: none; }
+}
+
+.lkc-timegrid__preview {
+  position: absolute;
+  left: 0.125rem;
+  right: 0.125rem;
+  background: var(--lkc-selection-bg);
+  border: var(--lk-border-width) dashed var(--lkc-selection-border);
+  border-radius: var(--lk-radius-sm);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.lkc-event__resize {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+// --- Agenda --------------------------------------------------------------------------------
+
+.lkc-agenda {
+  display: flex;
+  flex-direction: column;
+}
+
+.lkc-agenda__group {
+  border-bottom: var(--lk-border-width) solid var(--lkc-grid-line);
+
+  &:last-child { border-bottom: 0; }
+}
+
+.lkc-agenda__heading {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  padding: var(--lk-space-2) var(--lk-space-3);
+  font-size: var(--lk-text-xs);
+  font-weight: var(--lk-weight-semibold);
+  color: var(--lkc-header-color);
+  text-transform: uppercase;
+  background: var(--lk-bg-subtle);
+}
+
+.lkc-agenda__group--today .lkc-agenda__heading { color: var(--lkc-today-accent); }
+
+// A marked day group (opts.markedDays) — a colored dot + its label (if any) in the heading row.
+.lkc-agenda__group--marked .lkc-agenda__heading::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  flex-shrink: 0;
+  border-radius: var(--lk-radius-full);
+  background: var(--lkc-mark-color);
+}
+
+.lkc-agenda__heading-mark {
+  text-transform: none;
+  font-weight: var(--lk-weight-regular);
+  color: var(--lk-text-muted);
+}
+
+.lkc-agenda__item,
+.lkc-day-popover .lkc-agenda__item {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-3);
+  width: 100%;
+  border: 0;
+  border-left: 3px solid var(--lkc-event-color);
+  background: var(--lk-bg);
+  padding: var(--lk-space-2) var(--lk-space-3);
+  text-align: left;
+  cursor: pointer;
+  font-size: var(--lk-text-sm);
+
+  &:hover { background: var(--lk-bg-subtle); }
+}
+
+.lkc-agenda__time {
+  flex: 0 0 5rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--lk-text-muted);
+  font-size: var(--lk-text-xs);
+}
+
+.lkc-agenda__empty {
+  padding: var(--lk-space-4);
+  text-align: center;
+  color: var(--lk-text-muted);
+}
+
+.lkc-day-popover {
+  display: flex;
+  flex-direction: column;
+  min-width: 16rem;
+  max-height: 20rem;
+  overflow-y: auto;
+  gap: 0.0625rem;
+}
+
+// --- Event form (built-in dialog content) -------------------------------------------------
+
+.lkc-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lk-space-3);
+  min-width: 20rem;
+}
+
+.lkc-form__row--split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--lk-space-3);
+}
+
+.lkc-form__label {
+  display: block;
+  font-size: var(--lk-text-xs);
+  font-weight: var(--lk-weight-semibold);
+  color: var(--lk-text-muted);
+  margin-bottom: var(--lk-space-1);
+}
+
+.lkc-form__input--invalid {
+  border-color: var(--lk-negative) !important;
+}
+
+.lkc-form__icon-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+}
+
+.lkc-form__checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  font-size: var(--lk-text-sm);
+  cursor: pointer;
+}
+
+.lkc-dialog__delete {
+  margin-right: auto;
+}
+
+.lkc-recurrence-scope {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lk-space-2);
+  min-width: 18rem;
+}
+
+.lkc-recurrence-scope__btn {
+  justify-content: flex-start;
+}
+
+@media (max-width: 36rem) {
+  .lkc-form__row--split { grid-template-columns: 1fr; }
+  .lkc-toolbar__title { min-width: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lkc-event,
+  .lkc-toolbar__view-btn {
+    transition-duration: 1ms !important;
+  }
+}
