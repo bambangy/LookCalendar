@@ -1,0 +1,66 @@
+name: Release
+
+# Stages a publish to npm (with provenance) when a GitHub Release is published.
+# Nothing goes live until a maintainer approves it with 2FA:
+#   npmjs.com -> @lookui/calendar -> Staged Packages -> Approve
+#   or: npm stage list @lookui/calendar && npm stage approve <stage-id>
+# Tag the release as v<version>, matching "version" in package.json.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write # Sigstore provenance / npm trusted publishing
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Check tag matches package.json version
+        run: |
+          PKG="v$(node -p "require('./package.json').version")"
+          if [ "$PKG" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Release tag $GITHUB_REF_NAME does not match package.json version $PKG"
+            exit 1
+          fi
+
+      # npm stage needs npm CLI >= 11.15.0
+      - name: Upgrade npm CLI
+        run: |
+          npm install -g npm@^11.15.0
+          npm --version
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm run test
+      - run: npm run test:docs
+
+      - name: Stage publish (approve on npmjs.com with 2FA)
+        run: npm stage publish --provenance --access public
+        env:
+          # Stage-only token. Once trusted publishing is configured on
+          # npmjs.com, delete the NPM_TOKEN secret; npm then uses OIDC.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Summary
+        run: |
+          {
+            echo "### Staged \`$(node -p "require('./package.json').name")@${GITHUB_REF_NAME#v}\`"
+            echo
+            echo "Not live yet. Approve with 2FA on npmjs.com (Staged Packages tab),"
+            echo "or run \`npm stage list\` then \`npm stage approve <stage-id>\`."
+          } >> "$GITHUB_STEP_SUMMARY"
